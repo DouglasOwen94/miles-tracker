@@ -1,0 +1,2403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#080C14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Miles">
+<title>Miles Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+
+:root{
+  --bg:          #080C14;
+  --surface:     #0E1422;
+  --surface2:    #141C2E;
+  --surface3:    #1A2438;
+  --border:      rgba(255,255,255,0.06);
+  --border2:     rgba(255,255,255,0.11);
+  --accent:      #34C88A;
+  --accent-dim:  rgba(52,200,138,0.10);
+  --red:         #F06060;
+  --amber:       #E8A820;
+  --blue:        #5B9CF6;
+  --text:        #EEF2F8;
+  --text-2:      rgba(238,242,248,0.60);
+  --text-3:      rgba(238,242,248,0.32);
+  --citi:        #C04040;
+  --hsbc:        #A0308A;
+  --uob:         #3A6ED4;
+  --sat: env(safe-area-inset-top,    0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── LOCK THE PAGE — no scroll ── */
+html, body {
+  height: 100%;
+  max-height: 100vh;
+  overflow: hidden;
+  font-family: 'Urbanist', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background:
+    radial-gradient(ellipse 110% 50% at -5% 0%,   rgba(52,200,138,0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 60%  40% at 105% 30%,  rgba(91,156,246,0.07) 0%, transparent 50%),
+    var(--bg);
+}
+
+/* ════════════════════════════════════════════
+   FULL-HEIGHT APP SHELL
+════════════════════════════════════════════ */
+#app {
+  display: flex;
+  flex-direction: column;
+  /* Use 100% of body height — body is fixed to 100% in html,body rule */
+  height: 100%;
+  padding-top: var(--sat);
+}
+
+/* ── TOP BAR ── */
+#top-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px 6px;
+}
+.top-wordmark {
+  display: flex; align-items: center; gap: 8px;
+}
+.top-wordmark-icon {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(52,200,138,0.22);
+  display: flex; align-items: center; justify-content: center;
+}
+.top-wordmark-text {
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-2);
+}
+.top-badge {
+  font-size: 11px; font-weight: 600;
+  padding: 5px 12px; border-radius: 100px;
+  background: var(--accent-dim); color: var(--accent);
+  border: 1px solid rgba(52,200,138,0.20);
+  letter-spacing: 0.01em;
+}
+.top-badge.incomplete {
+  background: rgba(232,168,32,0.08);
+  color: var(--amber);
+  border-color: rgba(232,168,32,0.20);
+}
+
+/* ── HERO SECTION — compact ── */
+#hero-section {
+  flex-shrink: 0;
+  padding: 4px 20px 6px;
+}
+.hero-eyebrow {
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 3px;
+}
+.hero-number {
+  font-size: clamp(28px, 8vw, 36px);
+  font-weight: 800; color: var(--text);
+  letter-spacing: -0.03em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.hero-sub {
+  font-size: 11px; color: var(--text-3);
+  margin-top: 3px; font-weight: 400;
+}
+
+/* Nudge bar */
+#nudge-bar {
+  margin: 4px 20px 0;
+  padding: 7px 12px 7px 30px;
+  border-radius: 10px; font-size: 12px; font-weight: 500;
+  line-height: 1.4; display: none; position: relative; flex-shrink: 0;
+}
+#nudge-bar::before {
+  content: ''; position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+  width: 13px; height: 13px; background: currentColor;
+  -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;
+  mask-size: contain; mask-repeat: no-repeat; mask-position: center;
+}
+#nudge-bar.red   { background: rgba(240,96,96,0.08);  color: #F09090; border: 1px solid rgba(240,96,96,0.16); }
+#nudge-bar.amber { background: rgba(232,168,32,0.08); color: #E8BC60; border: 1px solid rgba(232,168,32,0.16); }
+#nudge-bar.info  { background: rgba(91,156,246,0.08); color: #8ABAFF; border: 1px solid rgba(91,156,246,0.16); }
+#nudge-bar.red::before   { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='15' y1='9' x2='9' y2='15'/%3E%3Cline x1='9' y1='9' x2='15' y2='15'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='15' y1='9' x2='9' y2='15'/%3E%3Cline x1='9' y1='9' x2='15' y2='15'/%3E%3C/svg%3E"); }
+#nudge-bar.amber::before { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/%3E%3Cline x1='12' y1='9' x2='12' y2='13'/%3E%3Cline x1='12' y1='17' x2='12.01' y2='17'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/%3E%3Cline x1='12' y1='9' x2='12' y2='13'/%3E%3Cline x1='12' y1='17' x2='12.01' y2='17'/%3E%3C/svg%3E"); }
+#nudge-bar.info::before  { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='12' y1='16' x2='12' y2='12'/%3E%3Cline x1='12' y1='8' x2='12.01' y2='8'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='12' y1='16' x2='12' y2='12'/%3E%3Cline x1='12' y1='8' x2='12.01' y2='8'/%3E%3C/svg%3E"); }
+
+/* ════════════════════════════════════════════
+   CARD AREA — fills remaining vertical space
+   Card itself is fixed credit-card ratio inside
+════════════════════════════════════════════ */
+/* ════════════════════════════════════════════
+   CONTENT AREA — fills remaining vertical space
+   Either card-area OR a tab-page is shown, never both
+════════════════════════════════════════════ */
+#card-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0 0;
+}
+
+/* Carousel — fills remaining height, this is the constraint the card sizes to */
+#card-carousel-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+/* Rail — cards centred, vertical padding gives breathing room top & bottom */
+#cards-list {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  padding: 12px 28px;
+  height: 100%;
+  align-items: center;
+  will-change: transform;
+  cursor: grab;
+}
+#cards-list.is-dragging { cursor: grabbing; }
+
+/* ════════════════════════════════════════════
+   CREDIT CARD
+   HEIGHT fills the available carousel height (minus padding).
+   WIDTH is derived from that height ÷ 1.586 (portrait ISO ratio).
+   This guarantees the WHOLE card is always visible — it scales
+   to whatever vertical space is left between hero and nav bar.
+════════════════════════════════════════════ */
+.flip-card {
+  flex-shrink: 0;
+  /* Height fills the rail's available space (rail = carousel height minus 24px padding) */
+  height: 100%;
+  /* Aspect ratio computes the width automatically — portrait credit card */
+  aspect-ratio: 1 / 1.586;
+  /* Safety: never wider than screen */
+  max-width: calc(100vw - 56px);
+  perspective: 1400px;
+  cursor: pointer;
+}
+
+.flip-inner {
+  width: 100%; height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.45,0.05,0.55,0.95);
+  border-radius: 24px;
+}
+.flip-card.flipped .flip-inner { transform: rotateY(180deg); }
+.flip-card { user-select: none; -webkit-user-select: none; }
+.back-row  { user-select: none; -webkit-user-select: none; }
+
+.flip-front, .flip-back {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; /* explicit — prevents any size drift */
+  border-radius: 24px;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  overflow: hidden; /* clip content to card bounds */
+}
+/* When card is flipped, front is rotated away — kill its pointer events so back taps don't bubble through */
+.flip-card.flipped .flip-front { pointer-events: none; }
+/* When card is NOT flipped, back is rotated away — kill its pointer events */
+.flip-card:not(.flipped) .flip-back { pointer-events: none; }
+
+/* ── CARD FRONT ── */
+.flip-front {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px 28px 30px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    inset 0 -1px 0 rgba(0,0,0,0.18),
+    0 24px 60px rgba(0,0,0,0.55),
+    0 8px 20px rgba(0,0,0,0.30);
+}
+
+/* Brushed metal texture — tight diagonal lines */
+.flip-front::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: repeating-linear-gradient(
+    105deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(255,255,255,0.045) 2px,
+    rgba(255,255,255,0.045) 3px
+  );
+}
+
+/* Specular highlight — light source from top-left */
+.flip-front::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    linear-gradient(135deg,
+      rgba(255,255,255,0.28) 0%,
+      rgba(255,255,255,0.08) 30%,
+      transparent 60%,
+      rgba(0,0,0,0.12) 100%
+    );
+}
+
+/* ── Per-card brushed metal base colours ── */
+/* Citi — warm rose silver */
+.card-citi .flip-front {
+  background: linear-gradient(160deg, #C8A8A0 0%, #B89490 25%, #A87E7A 50%, #C0908A 75%, #D0A8A2 100%);
+}
+/* HSBC — cool violet silver */
+.card-hsbc .flip-front {
+  background: linear-gradient(160deg, #A8A0C0 0%, #9490B4 25%, #8880A8 50%, #9890B8 75%, #B0A8C8 100%);
+}
+/* UOB Preferred — steel blue silver */
+.card-uob-p .flip-front {
+  background: linear-gradient(160deg, #98A8C0 0%, #8898B0 25%, #7888A4 50%, #8898B4 75%, #A0B0C4 100%);
+}
+/* UOB Lady's — champagne silver */
+.card-uob-l .flip-front {
+  background: linear-gradient(160deg, #C4B898 0%, #B4A888 25%, #A89878 50%, #B8A888 75%, #C8B8A0 100%);
+}
+
+/* All text on metal cards is dark (contrast on light metal) */
+.card-bank-name {
+  font-size: 11px; font-weight: 700;
+  color: rgba(0,0,0,0.50);
+  letter-spacing: 0.10em; text-transform: uppercase;
+  position: relative; z-index: 1;
+}
+.card-flip-hint {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 9px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(0,0,0,0.28);
+  position: relative; z-index: 1;
+}
+
+/* TOP ROW */
+.card-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  position: relative; z-index: 1;
+}
+
+/* MIDDLE — big bold card name */
+.card-mid {
+  position: relative; z-index: 1;
+}
+.card-name-big {
+  font-size: clamp(26px, 7.5vw, 36px);
+  font-weight: 800;
+  color: rgba(0,0,0,0.70);
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.40);
+}
+
+/* BOTTOM — points + miles stacked */
+.card-bottom {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  position: relative; z-index: 1;
+}
+.card-bottom-left { display: flex; flex-direction: column; gap: 6px; }
+.card-stat {
+  display: flex; flex-direction: column; gap: 1px;
+}
+.card-stat-label {
+  font-size: 8px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(0,0,0,0.38);
+}
+.card-stat-value {
+  font-size: 16px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: rgba(0,0,0,0.72);
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+}
+.card-stat-value.miles { color: rgba(0,0,0,0.80); }
+.card-rate-pill {
+  font-size: 9px; font-weight: 700;
+  padding: 4px 10px; border-radius: 100px;
+  background: rgba(0,0,0,0.08);
+  color: rgba(0,0,0,0.42);
+  border: 1px solid rgba(0,0,0,0.12);
+  letter-spacing: 0.04em;
+  align-self: flex-end;
+}
+
+/* Flash overlay */
+.check-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(52,200,138,0.22); border-radius: inherit;
+  pointer-events: none; opacity: 0; transition: opacity 0.25s;
+  z-index: 10;
+}
+.check-overlay.show { opacity: 1; }
+
+/* ── CARD BACK — same metal finish as front ── */
+.flip-back {
+  transform: rotateY(180deg);
+  display: flex; flex-direction: column;
+  /* Base — overridden per-card below */
+  background: linear-gradient(160deg, #C8A8A0 0%, #B89490 25%, #A87E7A 50%, #C0908A 75%, #D0A8A2 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    inset 0 -1px 0 rgba(0,0,0,0.18),
+    0 24px 60px rgba(0,0,0,0.55),
+    0 8px 20px rgba(0,0,0,0.30);
+  position: relative;
+}
+/* Same brushed texture as front */
+.flip-back::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0; border-radius: inherit;
+  background: repeating-linear-gradient(
+    105deg,
+    transparent 0px, transparent 2px,
+    rgba(255,255,255,0.045) 2px, rgba(255,255,255,0.045) 3px
+  );
+}
+/* Same specular highlight */
+.flip-back::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0; border-radius: inherit;
+  background: linear-gradient(135deg,
+    rgba(255,255,255,0.28) 0%,
+    rgba(255,255,255,0.08) 30%,
+    transparent 60%,
+    rgba(0,0,0,0.12) 100%
+  );
+}
+/* Per-card metal tints — back matches front */
+.card-citi  .flip-back { background: linear-gradient(160deg, #C8A8A0 0%, #B89490 25%, #A87E7A 50%, #C0908A 75%, #D0A8A2 100%); }
+.card-hsbc  .flip-back { background: linear-gradient(160deg, #A8A0C0 0%, #9490B4 25%, #8880A8 50%, #9890B8 75%, #B0A8C8 100%); }
+.card-uob-p .flip-back { background: linear-gradient(160deg, #98A8C0 0%, #8898B0 25%, #7888A4 50%, #8898B4 75%, #A0B0C4 100%); }
+.card-uob-l .flip-back { background: linear-gradient(160deg, #C4B898 0%, #B4A888 25%, #A89878 50%, #B8A888 75%, #C8B8A0 100%); }
+
+.card-back-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(0,0,0,0.10);
+  flex-shrink: 0;
+  position: relative; z-index: 1;
+}
+.card-back-name {
+  font-size: 13px; font-weight: 700; color: rgba(0,0,0,0.65);
+  display: flex; align-items: center; gap: 8px;
+  letter-spacing: 0.02em;
+}
+.card-back-close {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(0,0,0,0.10); border: 1px solid rgba(0,0,0,0.15);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(0,0,0,0.50); cursor: pointer;
+  transition: background 0.15s;
+}
+.card-back-close:active { background: rgba(0,0,0,0.18); }
+.card-back-close svg { stroke: rgba(0,0,0,0.50); }
+
+.card-back-body {
+  flex: 1; overflow-y: auto;
+  padding: 10px 14px 14px;
+  display: flex; flex-direction: column; gap: 7px;
+  scrollbar-width: none;
+  position: relative; z-index: 1;
+}
+.card-back-body::-webkit-scrollbar { display: none; }
+
+/* Settings rows — frosted glass on metal */
+.back-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border-radius: 10px;
+  background: rgba(255,255,255,0.32);
+  border: 1px solid rgba(255,255,255,0.55);
+  min-height: 44px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.back-row-left { display: flex; flex-direction: column; gap: 2px; }
+.back-row-label { font-size: 9px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; color: rgba(0,0,0,0.40); }
+.back-row-value { font-size: 13px; font-weight: 700; color: rgba(0,0,0,0.72); }
+
+.back-row.paid    { background: rgba(52,200,138,0.22); border-color: rgba(52,200,138,0.45); }
+.back-row.unpaid  { background: rgba(240,96,96,0.15);  border-color: rgba(240,96,96,0.35); }
+.back-row.overdue { background: rgba(240,96,96,0.22);  border-color: rgba(240,96,96,0.55); animation: pulse-red 2s infinite; }
+.back-row.paid    .back-row-value { color: rgba(0,100,60,0.85); }
+.back-row.unpaid  .back-row-value,
+.back-row.overdue .back-row-value { color: rgba(160,40,40,0.90); }
+
+.back-row.exp-green { background: rgba(52,200,138,0.18);  border-color: rgba(52,200,138,0.40); }
+.back-row.exp-amber { background: rgba(232,168,32,0.18);  border-color: rgba(232,168,32,0.40); }
+.back-row.exp-red   { background: rgba(240,96,96,0.18);   border-color: rgba(240,96,96,0.40); }
+.back-row.exp-green .back-row-value { color: rgba(0,100,60,0.85); }
+.back-row.exp-amber .back-row-value { color: rgba(140,90,0,0.90); }
+.back-row.exp-red   .back-row-value { color: rgba(160,40,40,0.90); }
+
+.toggle-sw {
+  width: 40px; height: 24px; border-radius: 12px;
+  background: rgba(0,0,0,0.15); position: relative; flex-shrink: 0;
+  transition: background 0.22s;
+}
+.toggle-sw::after {
+  content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: white; top: 3px; left: 3px;
+  transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.30);
+}
+.back-row.paid .toggle-sw { background: rgba(30,160,100,0.75); }
+.back-row.paid .toggle-sw::after { transform: translateX(16px); }
+
+.back-edit-btn {
+  font-size: 11px; font-weight: 700; color: rgba(0,0,0,0.55);
+  padding: 5px 10px; border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.18); background: rgba(255,255,255,0.30);
+  cursor: pointer; min-height: 30px; font-family: inherit;
+  display: flex; align-items: center; gap: 4px;
+}
+.back-upload-btn {
+  width: 100%; padding: 12px 16px; border-radius: 10px;
+  background: rgba(0,0,0,0.65); color: #ffffff;
+  font-size: 13px; font-weight: 700; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: opacity 0.18s, transform 0.12s; font-family: inherit; min-height: 44px;
+}
+.back-upload-btn:active { transform: scale(0.98); opacity: 0.80; }
+.back-upload-btn.loading { opacity: 0.45; pointer-events: none; }
+.back-upload-btn.hsbc-manual {
+  background: rgba(255,255,255,0.35); color: rgba(0,0,0,0.65);
+  border: 1px solid rgba(0,0,0,0.18);
+}
+.back-manual-row { display: none; gap: 8px; }
+.back-manual-row.visible { display: flex; }
+.back-manual-input {
+  flex: 1; padding: 11px 13px; border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.20); background: rgba(255,255,255,0.45);
+  font-size: 16px; font-family: inherit; color: rgba(0,0,0,0.80); outline: none;
+}
+.back-manual-input:focus { border-color: rgba(0,0,0,0.50); }
+.back-manual-save {
+  padding: 11px 15px; border-radius: 10px; background: rgba(0,0,0,0.70);
+  color: #ffffff; font-size: 13px; font-weight: 700;
+  border: none; cursor: pointer; font-family: inherit;
+}
+.back-parse-result { font-size: 11px; padding: 7px 9px; border-radius: 7px; display: none; }
+.back-parse-result.success { display: block; background: rgba(52,200,138,0.25); color: rgba(0,100,60,0.90); }
+.back-parse-result.error   { display: block; background: rgba(240,96,96,0.20);  color: rgba(160,40,40,0.90); }
+.uob-pool-note {
+  font-size: 11px; color: rgba(0,0,0,0.55); text-align: center;
+  padding: 8px 10px; background: rgba(255,255,255,0.30); border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.12); line-height: 1.5;
+}
+
+/* ── DOTS ── */
+#carousel-dots {
+  flex-shrink: 0;
+  display: flex; justify-content: center; gap: 5px;
+  padding: 10px 0 8px;
+}
+.c-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--text-3); transition: all 0.25s ease;
+}
+.c-dot.active { width: 20px; border-radius: 2px; background: var(--accent); }
+
+/* ════════════════════════════════════════════
+   ICON-ONLY TAB BAR — bottom, minimal
+════════════════════════════════════════════ */
+#tab-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 8px 24px calc(8px + var(--sab));
+  border-top: 1px solid var(--border);
+  background: rgba(8,12,20,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.tab-btn {
+  display: flex; align-items: center; justify-content: center;
+  padding: 12px 24px; border: none; background: transparent;
+  cursor: pointer; color: var(--text-3); transition: color 0.18s;
+  min-height: 48px;
+}
+.tab-btn.active { color: var(--accent); }
+.tab-btn svg { display: block; }
+
+/* ════════════════════════════════════════════
+   TAB PAGES — in-flow content areas
+   Each page fills the content area between top-bar/hero and tab bar
+   Tab bar NEVER disappears — it's always the last flex child of #app
+════════════════════════════════════════════ */
+.tab-page {
+  display: none;
+}
+.tab-page.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px 20px;
+  scrollbar-width: none;
+}
+.tab-page.active::-webkit-scrollbar { display: none; }
+
+/* History */
+.history-title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px; }
+.history-sub   { font-size: 13px; color: var(--text-3); margin-bottom: 20px; }
+.graph-card {
+  background: var(--surface); border-radius: 16px;
+  border: 1px solid var(--border); padding: 18px; margin-bottom: 14px;
+}
+.graph-card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-3); margin-bottom: 14px; }
+#graph-canvas { width: 100%; height: 180px; display: block; }
+.graph-legend { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.legend-item  { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); font-weight: 500; }
+.legend-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.history-card-row {
+  background: var(--surface); border-radius: 12px; border: 1px solid var(--border);
+  padding: 14px 16px; margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.history-card-name  { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.history-card-pts   { font-size: 11px; color: var(--text-3); }
+.history-card-miles { font-size: 16px; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+.history-card-updated { font-size: 10px; color: var(--text-3); margin-top: 2px; text-align: right; }
+
+/* Settings */
+.settings-title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px; }
+.settings-sub   { font-size: 13px; color: var(--text-3); margin-bottom: 20px; }
+.settings-group { margin-bottom: 20px; }
+.settings-group-label { font-size: 10px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; padding: 0 2px; }
+.settings-item {
+  background: var(--surface); border-radius: 12px; border: 1px solid var(--border);
+  padding: 14px 16px; display: flex; align-items: center; gap: 14px;
+  margin-bottom: 8px; cursor: pointer; transition: background 0.15s;
+}
+.settings-item:active { background: var(--surface2); }
+.settings-item-icon {
+  width: 40px; height: 40px; border-radius: 11px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); border: 1px solid var(--border2);
+}
+.settings-item-icon.green { background: var(--accent-dim); border-color: rgba(52,200,138,0.20); }
+.settings-item-icon.blue  { background: rgba(91,156,246,0.10); border-color: rgba(91,156,246,0.20); }
+.settings-item-icon.amber { background: rgba(232,168,32,0.10);  border-color: rgba(232,168,32,0.20); }
+.settings-item-icon.red   { background: rgba(240,96,96,0.10);   border-color: rgba(240,96,96,0.20); }
+.settings-item-body { flex: 1; }
+.settings-item-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+.settings-item-desc  { font-size: 12px; color: var(--text-3); line-height: 1.4; }
+.settings-item-arrow { color: var(--text-3); }
+.settings-disclaimer { font-size: 11px; color: var(--text-3); line-height: 1.65; text-align: center; padding: 4px; }
+#debug-output {
+  display: none; background: var(--surface2); border-radius: 10px;
+  padding: 12px; font-size: 11px; font-family: monospace;
+  white-space: pre-wrap; word-break: break-all;
+  max-height: 260px; overflow-y: auto; color: var(--text-3);
+  border: 1px solid var(--border); margin-bottom: 14px;
+}
+
+/* Tab page header removed — tab bar is always persistent */
+
+/* ════════════════════════════════════════════
+   MODALS — bottom sheet
+════════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+  z-index: 200; display: none; align-items: flex-end; justify-content: center;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border-radius: 22px 22px 0 0;
+  width: 100%; max-width: 480px;
+  padding: 20px 24px calc(24px + var(--sab));
+  border-top: 1px solid var(--border2);
+}
+.modal-handle { width: 32px; height: 3px; background: var(--border2); border-radius: 2px; margin: 0 auto 20px; }
+.modal-title  { font-size: 19px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.modal-sub    { font-size: 13px; color: var(--text-2); margin-bottom: 18px; line-height: 1.5; }
+.modal-field  { margin-bottom: 16px; }
+.modal-label  { font-size: 10px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-3); display: block; margin-bottom: 7px; }
+.modal-input  {
+  width: 100%; padding: 14px 16px; border-radius: 12px;
+  border: 1px solid var(--border2); font-size: 16px; font-family: inherit;
+  color: var(--text); outline: none; background: var(--surface2);
+}
+.modal-input:focus { border-color: var(--accent); }
+.modal-actions       { display: flex; gap: 8px; margin-top: 6px; }
+.modal-btn-primary   { flex: 1; padding: 15px; border-radius: 12px; background: var(--accent); color: #050C14; font-size: 15px; font-weight: 700; border: none; cursor: pointer; min-height: 52px; font-family: inherit; }
+.modal-btn-secondary { padding: 15px 18px; border-radius: 12px; background: var(--surface2); color: var(--text-2); font-size: 15px; font-weight: 600; border: 1px solid var(--border); cursor: pointer; font-family: inherit; }
+
+/* ── ONBOARDING ── */
+#onboarding-overlay {
+  position: fixed; inset: 0; background: var(--bg); z-index: 300;
+  display: none; flex-direction: column; align-items: center;
+  justify-content: center; padding: 32px 24px; overflow-y: auto;
+}
+#onboarding-overlay.open { display: flex; }
+.ob-welcome { text-align: center; margin-bottom: 28px; }
+.ob-welcome-icon {
+  width: 72px; height: 72px; background: var(--accent-dim);
+  border: 1px solid rgba(52,200,138,0.20); border-radius: 22px;
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
+}
+.ob-welcome-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 10px; }
+.ob-welcome-sub   { font-size: 14px; color: var(--text-2); line-height: 1.6; max-width: 300px; margin: 0 auto; }
+.ob-disclaimer {
+  background: var(--surface); border-radius: 12px; padding: 14px 16px;
+  margin-bottom: 20px; font-size: 12px; color: var(--text-2);
+  line-height: 1.6; border: 1px solid var(--border);
+  max-width: 400px; width: 100%; display: flex; align-items: flex-start; gap: 10px;
+}
+.ob-disclaimer-icon { flex-shrink: 0; margin-top: 1px; }
+.ob-card { background: var(--surface); border-radius: 18px; padding: 24px; border: 1px solid var(--border2); width: 100%; max-width: 400px; }
+.ob-step-label { font-size: 11px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+.ob-card-name  { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+.ob-desc       { font-size: 13px; color: var(--text-2); margin-bottom: 22px; line-height: 1.55; }
+.ob-field      { margin-bottom: 14px; }
+.ob-label { font-size: 10px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-3); display: block; margin-bottom: 7px; }
+.ob-input {
+  width: 100%; padding: 13px 14px; border-radius: 10px;
+  border: 1px solid var(--border2); font-size: 16px; font-family: inherit;
+  background: var(--surface2); color: var(--text); outline: none;
+}
+.ob-input:focus { border-color: var(--accent); }
+.ob-hint { font-size: 11px; color: var(--text-3); margin-top: 5px; }
+.ob-btn  { width: 100%; padding: 15px; border-radius: 12px; background: var(--accent); color: #050C14; font-size: 15px; font-weight: 700; border: none; cursor: pointer; margin-top: 10px; min-height: 52px; font-family: inherit; }
+.ob-progress { display: flex; gap: 5px; margin-bottom: 22px; justify-content: center; }
+.ob-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); transition: all 0.25s; }
+.ob-dot.active { background: var(--accent); width: 18px; border-radius: 3px; }
+.ob-dot.done   { background: rgba(52,200,138,0.35); }
+.ob-skip { font-size: 13px; color: var(--text-3); text-align: center; margin-top: 16px; cursor: pointer; padding: 8px; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: calc(72px + var(--sab)); left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--surface3, #1A2438); color: var(--text);
+  padding: 10px 18px; border-radius: 100px;
+  font-size: 13px; font-weight: 600; opacity: 0;
+  transition: opacity 0.22s, transform 0.22s;
+  z-index: 400; white-space: nowrap; pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.45); border: 1px solid var(--border2);
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── ANIMATIONS ── */
+@keyframes pulse-red   { 0%,100%{box-shadow:0 0 0 0 rgba(240,96,96,0)} 50%{box-shadow:0 0 0 4px rgba(240,96,96,0.16)} }
+@keyframes pulse-green { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
+@keyframes spin        { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation: none !important; transition-duration: 0.01ms !important; } }
+input[type=file] { display: none; }
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding-overlay">
+  <div id="ob-welcome-screen" class="ob-welcome">
+    <div class="ob-welcome-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>
+    </div>
+    <div class="ob-welcome-title">Miles Tracker</div>
+    <div class="ob-welcome-sub">Track KrisFlyer miles across all your cards.</div>
+  </div>
+  <div class="ob-disclaimer">
+    <span class="ob-disclaimer-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+    <span><strong style="color:var(--text)">Your data never leaves your phone.</strong> Everything stored locally.</span>
+  </div>
+  <div class="ob-progress" id="ob-progress"></div>
+  <div class="ob-card" id="ob-card"></div>
+  <div class="ob-skip" id="ob-skip-all">Skip — configure later</div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="expiry-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="expiry-modal-title">Points Expiry</div>
+    <div class="modal-sub">When do your points expire?</div>
+    <div class="modal-field">
+      <label class="modal-label">Expiry Date</label>
+      <input type="date" class="modal-input" id="expiry-date-input">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" onclick="closeModal('expiry-modal')">Cancel</button>
+      <button class="modal-btn-primary"   onclick="saveExpiry()">Save</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="stmtday-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Statement Day</div>
+    <div class="modal-sub" id="stmtday-modal-sub">Which day of the month?</div>
+    <div class="modal-field">
+      <label class="modal-label">Day of Month (1–28)</label>
+      <input type="number" class="modal-input" id="stmtday-input" min="1" max="28" placeholder="e.g. 15">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" onclick="closeModal('stmtday-modal')">Cancel</button>
+      <button class="modal-btn-primary"   onclick="saveStmtDay()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP SHELL ═══ -->
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div id="top-bar">
+    <div class="top-wordmark">
+      <div class="top-wordmark-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>
+      </div>
+      <span class="top-wordmark-text">Miles</span>
+    </div>
+    <span class="top-badge incomplete" id="completion-badge">0 / 3 PDFs</span>
+  </div>
+
+  <!-- HERO -->
+  <div id="hero-section">
+    <div class="hero-eyebrow">Total KrisFlyer Miles</div>
+    <div class="hero-number" id="hero-miles">—</div>
+    <div class="hero-sub" id="hero-sub">Upload your statements to get started</div>
+  </div>
+
+  <!-- NUDGE -->
+  <div id="nudge-bar"></div>
+
+  <!-- CARD AREA -->
+  <div id="card-area">
+    <div id="card-carousel-wrap">
+      <div id="cards-list">
+
+        <!-- CITI REWARDS -->
+        <div class="flip-card card-citi" id="fc-citi_rewards">
+          <div class="flip-inner" id="fi-citi_rewards">
+            <div class="flip-front" onclick="flipCard('citi_rewards')">
+              <div class="check-overlay" id="check-citi_rewards">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1a7a50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="card-top">
+                <span class="card-bank-name">Citibank</span>
+                <span class="card-flip-hint">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                  Tap to flip
+                </span>
+              </div>
+              <div class="card-mid">
+                <div class="card-name-big">Rewards</div>
+              </div>
+              <div class="card-bottom">
+                <div class="card-bottom-left">
+                  <div class="card-stat">
+                    <span class="card-stat-label">ThankYou Points</span>
+                    <span class="card-stat-value" id="card-pts-citi_rewards">—</span>
+                  </div>
+                  <div class="card-stat">
+                    <span class="card-stat-label">KrisFlyer Miles</span>
+                    <span class="card-stat-value miles" id="card-miles-citi_rewards">—</span>
+                  </div>
+                </div>
+                <div class="card-rate-pill">× 0.4</div>
+              </div>
+            </div>
+            <div class="flip-back" id="back-citi_rewards">
+              <div class="card-back-header">
+                <div class="card-back-name">
+                  <div style="width:8px;height:8px;border-radius:50%;background:var(--citi);flex-shrink:0"></div>
+                  Citibank Rewards
+                </div>
+                <div class="card-back-close" onclick="flipCard('citi_rewards')">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </div>
+              </div>
+              <div class="card-back-body" id="back-body-citi_rewards"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HSBC REVOLUTION -->
+        <div class="flip-card card-hsbc" id="fc-hsbc_revolution">
+          <div class="flip-inner" id="fi-hsbc_revolution">
+            <div class="flip-front" onclick="flipCard('hsbc_revolution')">
+              <div class="check-overlay" id="check-hsbc_revolution">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1a7a50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="card-top">
+                <span class="card-bank-name">HSBC</span>
+                <span class="card-flip-hint">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                  Tap to flip
+                </span>
+              </div>
+              <div class="card-mid">
+                <div class="card-name-big">Revolution</div>
+              </div>
+              <div class="card-bottom">
+                <div class="card-bottom-left">
+                  <div class="card-stat">
+                    <span class="card-stat-label">Reward Points</span>
+                    <span class="card-stat-value" id="card-pts-hsbc_revolution">—</span>
+                  </div>
+                  <div class="card-stat">
+                    <span class="card-stat-label">KrisFlyer Miles</span>
+                    <span class="card-stat-value miles" id="card-miles-hsbc_revolution">—</span>
+                  </div>
+                </div>
+                <div class="card-rate-pill">× 0.333</div>
+              </div>
+            </div>
+            <div class="flip-back" id="back-hsbc_revolution">
+              <div class="card-back-header">
+                <div class="card-back-name">
+                  <div style="width:8px;height:8px;border-radius:50%;background:var(--hsbc);flex-shrink:0"></div>
+                  HSBC Revolution
+                </div>
+                <div class="card-back-close" onclick="flipCard('hsbc_revolution')">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </div>
+              </div>
+              <div class="card-back-body" id="back-body-hsbc_revolution"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- UOB PREFERRED -->
+        <div class="flip-card card-uob-p" id="fc-uob_preferred">
+          <div class="flip-inner" id="fi-uob_preferred">
+            <div class="flip-front" onclick="flipCard('uob_preferred')">
+              <div class="check-overlay" id="check-uob_preferred">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1a7a50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="card-top">
+                <span class="card-bank-name">UOB</span>
+                <span class="card-flip-hint">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                  Tap to flip
+                </span>
+              </div>
+              <div class="card-mid">
+                <div class="card-name-big">Preferred<br>Platinum</div>
+              </div>
+              <div class="card-bottom">
+                <div class="card-bottom-left">
+                  <div class="card-stat">
+                    <span class="card-stat-label">UNI$ Pool</span>
+                    <span class="card-stat-value" id="card-pts-uob_preferred">—</span>
+                  </div>
+                  <div class="card-stat">
+                    <span class="card-stat-label">KrisFlyer Miles</span>
+                    <span class="card-stat-value miles" id="card-miles-uob_preferred">—</span>
+                  </div>
+                </div>
+                <div class="card-rate-pill">× 0.4</div>
+              </div>
+            </div>
+            <div class="flip-back" id="back-uob_preferred">
+              <div class="card-back-header">
+                <div class="card-back-name">
+                  <div style="width:8px;height:8px;border-radius:50%;background:var(--uob);flex-shrink:0"></div>
+                  UOB Preferred Platinum
+                </div>
+                <div class="card-back-close" onclick="flipCard('uob_preferred')">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </div>
+              </div>
+              <div class="card-back-body" id="back-body-uob_preferred"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- UOB LADY'S -->
+        <div class="flip-card card-uob-l" id="fc-uob_ladys">
+          <div class="flip-inner" id="fi-uob_ladys">
+            <div class="flip-front" onclick="flipCard('uob_ladys')">
+              <div class="check-overlay" id="check-uob_ladys">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1a7a50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="card-top">
+                <span class="card-bank-name">UOB</span>
+                <span class="card-flip-hint">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                  Tap to flip
+                </span>
+              </div>
+              <div class="card-mid">
+                <div class="card-name-big">Lady's<br>Card</div>
+              </div>
+              <div class="card-bottom">
+                <div class="card-bottom-left">
+                  <div class="card-stat">
+                    <span class="card-stat-label">UNI$ Pool</span>
+                    <span class="card-stat-value" id="card-pts-uob_ladys">—</span>
+                  </div>
+                  <div class="card-stat">
+                    <span class="card-stat-label">KrisFlyer Miles</span>
+                    <span class="card-stat-value miles" id="card-miles-uob_ladys">—</span>
+                  </div>
+                </div>
+                <div class="card-rate-pill">× 0.4</div>
+              </div>
+            </div>
+            <div class="flip-back" id="back-uob_ladys">
+              <div class="card-back-header">
+                <div class="card-back-name">
+                  <div style="width:8px;height:8px;border-radius:50%;background:var(--uob);flex-shrink:0"></div>
+                  UOB Lady's Card
+                </div>
+                <div class="card-back-close" onclick="flipCard('uob_ladys')">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </div>
+              </div>
+              <div class="card-back-body" id="back-body-uob_ladys"></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /cards-list -->
+    </div><!-- /card-carousel-wrap -->
+
+    <!-- DOTS -->
+    <div id="carousel-dots">
+      <div class="c-dot active"></div>
+      <div class="c-dot"></div>
+      <div class="c-dot"></div>
+      <div class="c-dot"></div>
+    </div>
+  </div><!-- /card-area -->
+
+  <!-- HISTORY TAB — in-flow, tab bar stays visible -->
+  <div class="tab-page" id="tab-history">
+    <div class="history-sub" style="margin-bottom:16px">KrisFlyer miles earned over time</div>
+    <div class="graph-card">
+      <div class="graph-card-title">All Cards — KrisFlyer Miles</div>
+      <canvas id="graph-canvas"></canvas>
+      <div class="graph-legend" id="graph-legend"></div>
+    </div>
+    <div id="history-card-list"></div>
+  </div>
+
+  <!-- SETTINGS TAB — in-flow, tab bar stays visible -->
+  <div class="tab-page" id="tab-settings">
+    <div class="settings-sub" style="margin-bottom:16px">Data &amp; configuration</div>
+    <div class="settings-group">
+      <div class="settings-group-label">Data</div>
+      <div class="settings-item" onclick="exportData()">
+        <div class="settings-item-icon green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+        <div class="settings-item-body"><div class="settings-item-title">Export Backup</div><div class="settings-item-desc">Save all data as JSON</div></div>
+        <div class="settings-item-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="settings-item" onclick="importData()">
+        <div class="settings-item-icon blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+        <div class="settings-item-body"><div class="settings-item-title">Import Backup</div><div class="settings-item-desc">Restore from exported file</div></div>
+        <div class="settings-item-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="settings-group-label">Configuration</div>
+      <div class="settings-item" onclick="resetOnboarding()">
+        <div class="settings-item-icon amber"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2m0 18v-2m10-8h-2M4 12H2"/></svg></div>
+        <div class="settings-item-body"><div class="settings-item-title">Setup Wizard</div><div class="settings-item-desc">Re-run card configuration</div></div>
+        <div class="settings-item-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="settings-item" onclick="debugPDF()">
+        <div class="settings-item-icon red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div class="settings-item-body"><div class="settings-item-title">Debug PDF</div><div class="settings-item-desc">Inspect raw PDF text extraction</div></div>
+        <div class="settings-item-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+    </div>
+    <div id="debug-output"></div>
+    <div class="settings-disclaimer">All data stored locally. Never sent anywhere.</div>
+  </div>
+
+  <!-- ICON-ONLY TAB BAR — always last, always visible -->
+  <div id="tab-bar">
+    <button class="tab-btn active" id="tab-btn-cards" onclick="switchTab('cards', this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    </button>
+    <button class="tab-btn" id="tab-btn-history" onclick="switchTab('history', this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </button>
+    <button class="tab-btn" id="tab-btn-settings" onclick="switchTab('settings', this)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2m0 18v-2m10-8h-2M4 12H2"/></svg>
+    </button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- Hidden file inputs -->
+<input type="file" id="file-citi_rewards"    accept=".pdf" onchange="handleFile(event,'citi_rewards')">
+<input type="file" id="file-hsbc_revolution" accept=".pdf" onchange="handleFile(event,'hsbc_revolution')">
+<input type="file" id="file-uob_preferred"   accept=".pdf" onchange="handleFile(event,'uob_preferred')">
+<input type="file" id="file-uob_ladys"       accept=".pdf" onchange="handleFile(event,'uob_ladys')">
+<input type="file" id="file-import"          accept=".json" onchange="handleImport(event)">
+<input type="file" id="file-debug"           accept=".pdf" onchange="handleDebugFile(event)">
+
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+
+
+const PARSER_CONFIG = {
+  citi_rewards: {
+    primary:  ['TOTAL POINTS AVAILABLE', 'REWARD PROGRAMME TOTAL POINTS AVAILABLE'],
+    fallback: ['THANKYOU POINTS BALANCE SUMMARY', 'Total Available', 'ThankYou Points Balance'],
+    label:    'ThankYou Points',
+    citiMode: true
+  },
+  hsbc_revolution: {
+    primary:  ['Total Points Available', 'TOTAL POINTS AVAILABLE'],
+    fallback: ['Points Carried Forward', 'Reward Points Balance', 'Points Balance'],
+    label:    'HSBC Reward Points',
+    hsbcMode: true
+  },
+  uob_preferred: {
+    primary:  ["UNI$", "UNI\$", "REWARDS SUMMARY"],
+    fallback: ['Current Balance', 'Rewards Summary'],
+    label:    "UNI$ Pool",
+    uob: true,
+    uobMode: true
+  },
+  uob_ladys: {
+    primary:  ["UNI$", "UNI\$", "REWARDS SUMMARY"],
+    fallback: ['Current Balance', 'Rewards Summary'],
+    label:    "UNI$ Pool",
+    uob: true,
+    uobMode: true
+  }
+};
+
+// Conversion rates
+const CONVERSION = {
+  citi_rewards:    pts => Math.floor(pts / 10000 * 4000),   // 10k pts = 4k miles
+  hsbc_revolution: pts => Math.floor(pts / 30000 * 10000),  // 30k pts = 10k miles
+  uob_pool:        unis => Math.floor(unis * 0.4)            // pooled UNI$ × 0.4
+};
+
+// Cards that share one PDF
+const UOB_CARDS = ['uob_preferred', 'uob_ladys'];
+const cardIds   = ['citi_rewards', 'hsbc_revolution', 'uob_preferred', 'uob_ladys'];
+// PDF groups: which cards a single PDF upload covers
+const PDF_GROUPS = {
+  citi_rewards:    ['citi_rewards'],
+  hsbc_revolution: ['hsbc_revolution'],
+  uob_preferred:   ['uob_preferred', 'uob_ladys'],
+  uob_ladys:       ['uob_preferred', 'uob_ladys']
+};
+
+// ═══════════════════════════════════════════════════════════
+// DATA LAYER
+// ═══════════════════════════════════════════════════════════
+const STORAGE_KEY = 'miles-tracker-v2';
+
+function defaultCard() {
+  return {
+    points: null, points_prev: null,
+    expiry: null, statement_day: null,
+    payment_status: 'unknown', payment_cycle: null,
+    last_updated: null
+  };
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function getInitialData() {
+  return {
+    cards: {
+      citi_rewards:    defaultCard(),
+      hsbc_revolution: defaultCard(),
+      uob_preferred:   defaultCard(),
+      uob_ladys:       defaultCard()
+    },
+    onboarding_complete: false,
+    app_version: '2.0',
+    uploads_this_month: {}
+  };
+}
+
+let appData = loadData() || getInitialData();
+
+// ═══════════════════════════════════════════════════════════
+// MILES CALC
+// ═══════════════════════════════════════════════════════════
+function calcMiles(cardId) {
+  const c = appData.cards[cardId];
+  if (c.points === null) return null;
+  if (cardId === 'citi_rewards')    return CONVERSION.citi_rewards(c.points);
+  if (cardId === 'hsbc_revolution') return CONVERSION.hsbc_revolution(c.points);
+  return null; // UOB calculated via pool
+}
+
+function calcUOBPool() {
+  const p = appData.cards.uob_preferred.points || 0;
+  const l = appData.cards.uob_ladys.points || 0;
+  return { unis: p + l, miles: CONVERSION.uob_pool(p + l) };
+}
+
+function calcTotalMiles() {
+  let total = 0;
+  const citi  = calcMiles('citi_rewards');
+  const hsbc  = calcMiles('hsbc_revolution');
+  const uob   = calcUOBPool();
+  if (citi  !== null) total += citi;
+  if (hsbc  !== null) total += hsbc;
+  total += uob.miles;
+  return total;
+}
+
+// ═══════════════════════════════════════════════════════════
+// DATE HELPERS
+// ═══════════════════════════════════════════════════════════
+function today() {
+  return new Date();
+}
+function todayStr() {
+  const d = today();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function monthKey() {
+  const d = today();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function daysUntil(dateStr) {
+  const diff = new Date(dateStr) - today();
+  return Math.ceil(diff / 86400000);
+}
+function daysSince(dateStr) {
+  return Math.floor((today() - new Date(dateStr)) / 86400000);
+}
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-SG', { month: 'short', year: 'numeric' });
+}
+function formatNum(n) {
+  if (n === null || n === undefined) return '—';
+  return n.toLocaleString('en-SG');
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAYMENT STATUS LOGIC
+// ═══════════════════════════════════════════════════════════
+function getPaymentState(cardId) {
+  const c = appData.cards[cardId];
+  if (!c.statement_day) return { state: 'no-config', label: 'Set statement day to track payment' };
+
+  const now = today();
+  const day = now.getDate();
+  const mk  = monthKey();
+  const stmtDay = c.statement_day;
+
+  // Auto-reset to unpaid on new statement cycle
+  if (c.payment_cycle !== mk && day >= stmtDay) {
+    c.payment_status = 'unpaid';
+    c.payment_cycle  = mk;
+    saveData(appData);
+  }
+
+  const isPaid = c.payment_status === 'paid' && c.payment_cycle === mk;
+  if (isPaid) return { state: 'paid', label: 'Paid this month — tap to undo' };
+
+  if (day < stmtDay) {
+    const daysLeft = stmtDay - day;
+    return { state: 'upcoming', label: `Next statement in ${daysLeft} days` };
+  }
+
+  const daysOver = day - stmtDay;
+  if (daysOver >= 7) {
+    return { state: 'overdue', label: `Overdue — ${daysOver} days past statement date` };
+  }
+  return { state: 'unpaid', label: 'Unpaid — tap to mark as paid' };
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPIRY LOGIC
+// ═══════════════════════════════════════════════════════════
+function getExpiryState(cardId) {
+  const c = appData.cards[cardId];
+  if (!c.expiry) return { cls: 'exp-grey', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(241,245,249,0.45)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2m0 18v-2m8.66-9H20M4 12H2"/></svg>', text: 'Set expiry date' };
+
+  const days = daysUntil(c.expiry);
+  if (days < 0) return { cls: 'exp-red', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>', text: 'Points expired!' };
+  if (days < 30)  return { cls: 'exp-red',   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>', text: `Expires in ${days}d — convert now` };
+  if (days < 90)  return { cls: 'exp-amber', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', text: `Expires in ${days}d — act soon` };
+  return { cls: 'exp-green', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2DD4A0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>', text: `Expires ${formatDate(c.expiry)}` };
+}
+
+// ═══════════════════════════════════════════════════════════
+// NUDGE LOGIC (priority order)
+// ═══════════════════════════════════════════════════════════
+function computeNudge() {
+  const cards = ['citi_rewards', 'hsbc_revolution', 'uob_preferred', 'uob_ladys'];
+  const cardNames = {
+    citi_rewards: 'Citi Rewards', hsbc_revolution: 'HSBC Revolution',
+    uob_preferred: 'UOB Preferred Platinum', uob_ladys: "UOB Lady's"
+  };
+
+  // P1: overdue payment 7+ days
+  for (const id of cards) {
+    const ps = getPaymentState(id);
+    if (ps.state === 'overdue') {
+      return { cls: 'nudge-red', text: `${cardNames[id]} payment is overdue — ${ps.label}` };
+    }
+  }
+  // P2: points expiring < 30 days
+  for (const id of cards) {
+    const c = appData.cards[id];
+    if (c.expiry) {
+      const days = daysUntil(c.expiry);
+      if (days >= 0 && days < 30) {
+        const miles = id.startsWith('uob') ? null : calcMiles(id);
+        const extra = miles ? ` You have ${formatNum(miles)} KF miles to convert.` : '';
+        return { cls: 'nudge-red', text: `${cardNames[id]} points expire in ${days} days.${extra}` };
+      }
+    }
+  }
+  // P3: unpaid past statement
+  for (const id of cards) {
+    const ps = getPaymentState(id);
+    if (ps.state === 'unpaid') {
+      return { cls: 'nudge-amber', text: `${cardNames[id]} payment pending — tap to mark paid` };
+    }
+  }
+  // P4: expiry 30–90 days
+  for (const id of cards) {
+    const c = appData.cards[id];
+    if (c.expiry) {
+      const days = daysUntil(c.expiry);
+      if (days >= 30 && days < 90) {
+        return { cls: 'nudge-amber', text: `${cardNames[id]} points expire in ${days} days — plan your conversion` };
+      }
+    }
+  }
+  // P5: not updated in 35+ days
+  for (const id of cards) {
+    const c = appData.cards[id];
+    if (c.last_updated) {
+      const age = daysSince(c.last_updated);
+      if (age >= 35) {
+        return { cls: 'nudge-info', text: `${cardNames[id]} hasn't been updated in ${age} days` };
+      }
+    }
+  }
+  // P6: UOB pool >= 5000 UNI$
+  const pool = calcUOBPool();
+  if (pool.unis >= 5000) {
+    return { cls: 'nudge-info', text: `UOB pool has ${formatNum(pool.unis)} UNI$ — eligible for KrisFlyer transfer` };
+  }
+
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
+// animateHero moved to new UI section
+
+
+// renderAll moved to new UI section
+
+
+// renderCard replaced
+
+
+// ═══════════════════════════════════════════════════════════
+// INTERACTIONS
+// ═══════════════════════════════════════════════════════════
+function triggerUpload(cardId) {
+  document.getElementById(`file-${cardId}`).click();
+}
+
+function toggleManual(cardId) {
+  const el = document.getElementById(`manual-${cardId}`);
+  el.classList.toggle('visible');
+  if (el.classList.contains('visible')) {
+    document.getElementById(`manual-input-${cardId}`).focus();
+  }
+}
+
+function saveManual(cardId) {
+  const val = parseInt(document.getElementById(`manual-input-${cardId}`).value);
+  if (isNaN(val) || val < 0) { showToast('Enter a valid number'); return; }
+  updatePoints(cardId, val);
+  document.getElementById(`manual-${cardId}`).classList.remove('visible');
+  document.getElementById(`manual-input-${cardId}`).value = '';
+  flashCard(cardId, true);
+  showToast(`${PARSER_CONFIG[cardId].label} updated`);
+}
+
+
+function togglePayment(cardId) {
+  const c = appData.cards[cardId];
+  if (!c.statement_day) {
+    openStmtDayModal(cardId);
+    return;
+  }
+  const ps = getPaymentState(cardId);
+  const mk = monthKey();
+  if (ps.state === 'paid') {
+    c.payment_status = 'unpaid';
+    c.payment_cycle  = mk;
+  } else if (ps.state === 'unpaid' || ps.state === 'overdue' || ps.state === 'upcoming') {
+    c.payment_status = 'paid';
+    c.payment_cycle  = mk;
+    const el = document.getElementById(`back-payment-${cardId}`);
+    if (el) { el.style.animation = 'pulse-green 0.3s ease'; setTimeout(() => el.style.animation = '', 400); }
+  } else {
+    return;
+  }
+  saveData(appData);
+  renderAll();
+  renderCardBack(cardId);
+}
+
+// Expiry modal
+let _expiryTarget = null;
+function openExpiryModal(cardId) {
+  _expiryTarget = cardId;
+  const names = { citi_rewards:'Citi Rewards', hsbc_revolution:'HSBC Revolution', uob_preferred:'UOB Preferred Platinum', uob_ladys:"UOB Lady's" };
+  document.getElementById('expiry-modal-title').textContent = `${names[cardId]} — Points Expiry`;
+  const c = appData.cards[cardId];
+  document.getElementById('expiry-date-input').value = c.expiry || '';
+  openModal('expiry-modal');
+}
+function saveExpiry() {
+  if (!_expiryTarget) return;
+  const val = document.getElementById('expiry-date-input').value;
+  appData.cards[_expiryTarget].expiry = val || null;
+  saveData(appData);
+  renderAll();
+  closeModal('expiry-modal');
+}
+
+// Statement day modal
+let _stmtTarget = null;
+function openStmtDayModal(cardId) {
+  _stmtTarget = cardId;
+  const names = { citi_rewards:'Citi Rewards', hsbc_revolution:'HSBC Revolution', uob_preferred:'UOB Preferred Platinum', uob_ladys:"UOB Lady's" };
+  document.getElementById('stmtday-modal-sub').textContent = `${names[cardId]} — which day of the month?`;
+  document.getElementById('stmtday-input').value = appData.cards[cardId].statement_day || '';
+  openModal('stmtday-modal');
+}
+function saveStmtDay() {
+  if (!_stmtTarget) return;
+  const val = parseInt(document.getElementById('stmtday-input').value);
+  if (isNaN(val) || val < 1 || val > 28) { showToast('Enter a day between 1 and 28'); return; }
+  appData.cards[_stmtTarget].statement_day = val;
+  saveData(appData);
+  renderAll();
+  closeModal('stmtday-modal');
+}
+
+// modal funcs moved
+
+
+// flashCard moved
+
+
+// showParseResult moved
+
+
+// toggleFooter moved
+
+
+// Toast
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════════════════════════
+// PDF PARSING
+// ═══════════════════════════════════════════════════════════
+if (typeof pdfjsLib !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+async function extractPDFText(file) {
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let fullText = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const cont = await page.getTextContent();
+    const items = cont.items;
+
+    // Detect spaced-out PDF: if majority of items are single characters, collapse them
+    const singleCharCount = items.filter(it => it.str.trim().length === 1).length;
+    const isSpaced = items.length > 10 && (singleCharCount / items.length) > 0.5;
+
+    let pageText;
+    if (isSpaced) {
+      // Collapse spaced characters: join all items without separator,
+      // but insert space where there's a meaningful gap (hasEOL or width gap)
+      let rebuilt = '';
+      for (let j = 0; j < items.length; j++) {
+        const item = items[j];
+        const s = item.str;
+        if (item.hasEOL || s === '') {
+          rebuilt += ' ';
+        } else {
+          rebuilt += s;
+        }
+      }
+      pageText = rebuilt;
+    } else {
+      pageText = items.map(it => it.str).join(' ');
+    }
+
+    fullText += pageText + ' ';
+  }
+  return fullText;
+}
+
+function findPointsInText(text, config) {
+  // Special handling for Citi:
+  // PDF text around points: "TOTAL POINTS AVAILABLE ... 260.11 0.00 50.00 POINTS 198,575"
+  // Strategy: find "TOTAL POINTS AVAILABLE", then within that window find the number
+  // that comes AFTER the word "POINTS" (skipping dollar amounts which have decimals)
+  if (config.citiMode) {
+    const keywords = [...config.primary, ...config.fallback];
+    for (const kw of keywords) {
+      const idx = text.toUpperCase().indexOf(kw.toUpperCase());
+      if (idx === -1) continue;
+      const window = text.slice(idx, idx + 400);
+      // Look for "POINTS" followed by a number (the actual points balance, no decimal)
+      const pointsMatch = window.match(/POINTS\s+([\d,]+)(?!\.)(?:\s|$)/i);
+      if (pointsMatch) {
+        const n = parseInt(pointsMatch[1].replace(/,/g, ''));
+        if (!isNaN(n) && n > 0) return n;
+      }
+      // Fallback: skip any numbers with decimals, return first whole number >= 1000
+      const snippet = window.slice(kw.length);
+      const allNums = snippet.match(/\b[\d,]+\b/g) || [];
+      for (const m of allNums) {
+        if (m.includes('.')) continue; // skip dollar amounts
+        const n = parseInt(m.replace(/,/g, ''));
+        if (!isNaN(n) && n >= 1000) return n; // points balances are typically 1000+
+      }
+    }
+  }
+
+  // HSBC mode: "Total Points Available" label with number on same line
+  // PDF text: "Total Points Available 25,409"
+  if (config.hsbcMode) {
+    const keywords = [...config.primary, ...config.fallback];
+    for (const kw of keywords) {
+      const idx = text.toLowerCase().indexOf(kw.toLowerCase());
+      if (idx === -1) continue;
+      const snippet = text.slice(idx + kw.length, idx + kw.length + 100);
+      // Skip decimals, grab first whole number
+      const matches = snippet.match(/\b([\d,]+)\b/g) || [];
+      for (const m of matches) {
+        if (snippet[snippet.indexOf(m) - 1] === '.') continue; // skip decimal parts
+        const n = parseInt(m.replace(/,/g, ''));
+        if (!isNaN(n) && n > 0) return n;
+      }
+    }
+  }
+
+  // UOB mode: rewards table "UNI$ - 28,892.00 1,499.00 0.00 0.00 30,391.00"
+  // The row has: Previous Balance, Earned, Used, Adjustment, Current Balance
+  // Current Balance = last number in the row
+  if (config.uobMode) {
+    // Try "UNI$" first (exact), then "UNI" as fallback
+    let uniIdx = text.indexOf('UNI$');
+    if (uniIdx === -1) uniIdx = text.toUpperCase().indexOf('UNI$');
+    if (uniIdx === -1) uniIdx = text.toUpperCase().indexOf('UNIS');
+
+    if (uniIdx !== -1) {
+      // Take 400 chars after UNI$ to cover the full row
+      const row = text.slice(uniIdx, uniIdx + 400);
+      // Find all numbers with decimals (e.g. 30,391.00)
+      const nums = [...row.matchAll(/(\d[\d,]*\.\d{2})/g)]
+        .map(m => parseFloat(m[1].replace(/,/g, '')))
+        .filter(n => n > 0); // skip zeros
+      // Last non-zero number is Current Balance
+      if (nums.length > 0) return Math.round(nums[nums.length - 1]);
+    }
+
+    // Fallback: look for "Current Balance" near a number in rewards section
+    const rwdIdx = text.toUpperCase().indexOf('REWARDS SUMMARY');
+    if (rwdIdx !== -1) {
+      const block = text.slice(rwdIdx, rwdIdx + 600);
+      const nums = [...block.matchAll(/(\d[\d,]*\.\d{2})/g)]
+        .map(m => parseFloat(m[1].replace(/,/g, '')))
+        .filter(n => n > 0);
+      if (nums.length > 0) return Math.round(nums[nums.length - 1]);
+    }
+  }
+
+  // Standard keyword search for all other cards
+  const allKeywords = [...config.primary, ...config.fallback];
+  for (const kw of allKeywords) {
+    const idx = text.toLowerCase().indexOf(kw.toLowerCase());
+    if (idx === -1) continue;
+    const snippet = text.slice(idx, idx + 120);
+    const match = snippet.match(/[\d,]+(\.\d+)?/g);
+    if (match) {
+      for (const m of match) {
+        const n = parseInt(m.replace(/,/g, ''));
+        if (!isNaN(n)) return n;
+      }
+    }
+  }
+  return null;
+}
+
+// handleFile moved
+
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════════
+function exportData() {
+  const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const d    = todayStr();
+  a.href     = url;
+  a.download = `miles-tracker-backup-${d}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup downloaded');
+}
+
+function importData() {
+  document.getElementById('file-import').click();
+}
+
+function handleImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.cards) throw new Error('Invalid backup file');
+      appData = data;
+      saveData(appData);
+      renderAll();
+      showToast('Backup restored');
+    } catch (err) {
+      showToast('Could not restore — invalid file');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════════════════
+// ONBOARDING
+// ═══════════════════════════════════════════════════════════
+const OB_STEPS = [
+  {
+    cardId: 'citi_rewards',
+    name:   'Citi Rewards',
+    desc:   'Earns ThankYou Points. 10,000 pts = 4,000 KrisFlyer miles.',
+    pts_label: 'ThankYou Points balance (optional)',
+    pts_hint:  'Check your Citi app or upload PDF later'
+  },
+  {
+    cardId: 'hsbc_revolution',
+    name:   'HSBC Revolution',
+    desc:   'Earns HSBC Reward Points. 30,000 pts = 10,000 KrisFlyer miles.',
+    pts_label: 'Reward Points balance (optional)',
+    pts_hint:  'Check your HSBC app or upload PDF later'
+  },
+  {
+    cardId: 'uob_preferred',
+    name:   'UOB Preferred Platinum',
+    desc:   'Earns UNI$ that pool with your Lady\'s Card. Both cards share one combined PDF.',
+    pts_label: 'UNI$ balance (optional)',
+    pts_hint:  'Check your UOB app or upload the combined PDF later'
+  },
+  {
+    cardId: 'uob_ladys',
+    name:   "UOB Lady's Card",
+    desc:   'Earns UNI$ that pool with your Preferred Platinum. Combined pool × 0.4 = KrisFlyer miles.',
+    pts_label: "UNI$ balance (optional)",
+    pts_hint:  'Check your UOB app or upload the combined PDF later'
+  }
+];
+
+let obStep = 0;
+
+function renderOnboarding() {
+  const progress = document.getElementById('ob-progress');
+  progress.innerHTML = OB_STEPS.map((_, i) =>
+    `<div class="ob-dot ${i < obStep ? 'done' : i === obStep ? 'active' : ''}"></div>`
+  ).join('');
+
+  const s = OB_STEPS[obStep];
+  document.getElementById('ob-card').innerHTML = `
+    <div class="ob-step-label">Card ${obStep+1} of ${OB_STEPS.length}</div>
+    <div class="ob-card-name">${s.name}</div>
+    <div class="ob-desc">${s.desc}</div>
+    <div class="ob-field">
+      <label class="ob-label">Expiry Date</label>
+      <input type="date" class="ob-input" id="ob-expiry">
+      <div class="ob-hint">When do your points expire? You can set this later.</div>
+    </div>
+    <div class="ob-field">
+      <label class="ob-label">Statement Day</label>
+      <input type="number" class="ob-input" id="ob-stmtday" min="1" max="28" placeholder="e.g. 15">
+      <div class="ob-hint">Which day of the month is your statement generated?</div>
+    </div>
+    <div class="ob-field">
+      <label class="ob-label">${s.pts_label}</label>
+      <input type="number" class="ob-input" id="ob-pts" placeholder="0" min="0">
+      <div class="ob-hint">${s.pts_hint}</div>
+    </div>
+    <button class="ob-btn" onclick="obNext()">${obStep < OB_STEPS.length - 1 ? 'Next' : 'Done'}</button>
+  `;
+}
+
+function obNext() {
+  const s = OB_STEPS[obStep];
+  const c = appData.cards[s.cardId];
+  const expiry  = document.getElementById('ob-expiry').value;
+  const stmtDay = parseInt(document.getElementById('ob-stmtday').value);
+  const pts     = parseInt(document.getElementById('ob-pts').value);
+
+  if (expiry)        c.expiry        = expiry;
+  if (!isNaN(stmtDay) && stmtDay >= 1 && stmtDay <= 28) c.statement_day = stmtDay;
+  if (!isNaN(pts) && pts >= 0) {
+    c.points_prev = c.points;
+    c.points      = pts;
+    c.last_updated = todayStr();
+  }
+  saveData(appData);
+
+  obStep++;
+  if (obStep >= OB_STEPS.length) {
+    finishOnboarding();
+  } else {
+    renderOnboarding();
+  }
+}
+
+function finishOnboarding() {
+  appData.onboarding_complete = true;
+  saveData(appData);
+  document.getElementById('onboarding-overlay').classList.remove('open');
+  renderAll();
+  showToast('Setup complete');
+}
+
+function resetOnboarding() {
+  obStep = 0;
+  document.getElementById('ob-welcome-screen').style.display = 'none';
+  document.getElementById('ob-skip-all').style.display = 'none';
+  document.getElementById('onboarding-overlay').classList.add('open');
+  renderOnboarding();
+}
+
+document.getElementById('ob-skip-all').addEventListener('click', finishOnboarding);
+
+function startOnboarding() {
+  obStep = 0;
+  document.getElementById('ob-welcome-screen').style.display = '';
+  document.getElementById('ob-skip-all').style.display = '';
+  document.getElementById('ob-card').innerHTML = `
+    <button class="ob-btn" onclick="beginCardSetup()">Set up my cards →</button>
+  `;
+  document.getElementById('ob-progress').innerHTML = '';
+  document.getElementById('onboarding-overlay').classList.add('open');
+}
+
+function beginCardSetup() {
+  document.getElementById('ob-welcome-screen').style.display = 'none';
+  renderOnboarding();
+}
+
+// ═══════════════════════════════════════════════════════════
+// PWA — MANIFEST + SERVICE WORKER
+// ═══════════════════════════════════════════════════════════
+// Inline manifest via data URI
+(function() {
+  const manifest = {
+    name: 'Miles Tracker',
+    short_name: 'Miles',
+    description: 'Track KrisFlyer miles across your credit cards',
+    start_url: '.',
+    display: 'standalone',
+    theme_color: '#1A3C5E',
+    background_color: '#1A3C5E',
+    icons: [
+      { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231A3C5E"/><rect x="20" y="20" width="60" height="60" rx="12" fill="%232DD4A0"/></svg>', sizes: '192x192', type: 'image/svg+xml' },
+      { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231A3C5E"/><rect x="20" y="20" width="60" height="60" rx="12" fill="%232DD4A0"/></svg>', sizes: '512x512', type: 'image/svg+xml' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const link = document.querySelector('link[rel=manifest]');
+  if (link) link.href = url;
+})();
+
+// Service worker registration
+if ('serviceWorker' in navigator) {
+  const swCode = `
+const CACHE = 'miles-tracker-v2';
+const SHELL = ['./'];
+const PDF_CDN = 'https://cdnjs.cloudflare.com';
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(clients.claim());
+});
+self.addEventListener('fetch', e => {
+  const url = e.request.url;
+  if (url.includes(PDF_CDN)) {
+    // Network first for CDN
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+    return;
+  }
+  // Cache first for app shell
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).then(res => {
+    const clone = res.clone();
+    caches.open(CACHE).then(c => c.put(e.request, clone));
+    return res;
+  })));
+});
+  `;
+  const swBlob = new Blob([swCode], {type: 'application/javascript'});
+  const swUrl  = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+// old init removed
+
+
+
+
+let heroAnimFrame = null;
+
+function getPointsHistory(cardId) {
+  const history = appData.history || {};
+  const cardHistory = history[cardId] || {};
+  // Build 12 month labels
+  const months = [];
+  const now = today();
+  for (let i=11; i>=0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const label = d.toLocaleDateString('en-SG',{month:'short'});
+    if (cardHistory[key] !== undefined) months.push({key,label,points:cardHistory[key]});
+  }
+  // Also add current value if we have it
+  const mk = monthKey();
+  const c = appData.cards[cardId];
+  if (c.points !== null && !cardHistory[mk]) months.push({key:mk,label:'Now',points:c.points});
+  return months;
+}
+
+function updatePoints(cardId, points) {
+  const c = appData.cards[cardId];
+  c.points_prev  = c.points;
+  c.points       = points;
+  c.last_updated = todayStr();
+  if (!appData.uploads_this_month) appData.uploads_this_month = {};
+  appData.uploads_this_month[cardId] = monthKey();
+  // Save to history
+  if (!appData.history) appData.history = {};
+  if (!appData.history[cardId]) appData.history[cardId] = {};
+  appData.history[cardId][monthKey()] = points;
+  saveData(appData);
+  renderAll();
+}
+
+async function handleFile(event, cardId) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  setUploadLoading(cardId, true);
+  try {
+    if (typeof pdfjsLib === 'undefined') throw new Error('PDF library not loaded.');
+    const text = await extractPDFText(file);
+    if (PDF_GROUPS[cardId].length === 2 && cardId.startsWith('uob')) {
+      const prefConfig = PARSER_CONFIG['uob_preferred'];
+      const poolPts = findPointsInText(text, prefConfig);
+      if (poolPts !== null) {
+        updatePoints('uob_preferred', poolPts);
+        updatePoints('uob_ladys', 0);
+        flashCard('uob_preferred', true); flashCard('uob_ladys', true);
+        showParseResult('uob_preferred', `Pool total: ${formatNum(poolPts)} UNI$ = ${formatNum(Math.floor(poolPts*0.4))} KrisFlyer miles`, true);
+        showToast(`UOB: ${formatNum(poolPts)} UNI$ parsed`);
+      } else {
+        flashCard('uob_preferred', false);
+        showParseResult('uob_preferred', 'Could not read UNI$ — enter manually', false);
+        showToast('Could not parse — enter manually');
+      }
+    } else {
+      const config = PARSER_CONFIG[cardId];
+      const pts = findPointsInText(text, config);
+      if (pts !== null) {
+        updatePoints(cardId, pts);
+        flashCard(cardId, true);
+        showParseResult(cardId, `Found ${formatNum(pts)} ${config.label}`, true);
+        showToast('Statement parsed');
+      } else {
+        flashCard(cardId, false);
+        showParseResult(cardId, `Could not read ${config.label} — enter manually`, false);
+        showToast('Could not parse — enter manually');
+      }
+    }
+  } catch(err) {
+    flashCard(cardId, false);
+    showParseResult(cardId, `Error: ${err.message}`, false);
+    showToast('Parse failed');
+  }
+  setUploadLoading(cardId, false);
+}
+
+function toggleFooter() {
+  const c=document.getElementById('footer-content');
+  const a=document.getElementById('footer-arrow');
+  c.classList.toggle('open');
+  a.textContent=c.classList.contains('open')?'▾':'▸';
+}
+
+
+function openModal(id){document.getElementById(id).classList.add('open')}
+
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')});
+});
+
+function animateHero(target) {
+  const el=document.getElementById('hero-miles');
+  const start=parseInt(el.textContent.replace(/\D/g,''))||0;
+  const diff=target-start; const dur=800; const startTime=performance.now();
+  if(heroAnimFrame)cancelAnimationFrame(heroAnimFrame);
+  function step(now){
+    const t=Math.min((now-startTime)/dur,1);
+    const ease=1-Math.pow(1-t,3);
+    el.textContent=formatNum(Math.round(start+diff*ease));
+    if(t<1)heroAnimFrame=requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function debugPDF(){document.getElementById('file-debug').click()}
+// ═══════════════════════════════════════════════════════════
+// TAB SWITCHING — overlay approach
+// ═══════════════════════════════════════════════════════════
+
+function switchTab(name, btn) {
+  // Update tab button active states
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Show/hide content areas — tab bar NEVER moves
+  const cardArea = document.getElementById('card-area');
+  const historyPage = document.getElementById('tab-history');
+  const settingsPage = document.getElementById('tab-settings');
+
+  // Hide all content
+  cardArea.style.display = 'none';
+  historyPage.classList.remove('active');
+  settingsPage.classList.remove('active');
+
+  if (name === 'cards') {
+    cardArea.style.display = 'flex';  // restore as flex column
+  } else if (name === 'history') {
+    historyPage.classList.add('active');
+    renderHistoryRows();
+    drawGraph();
+  } else if (name === 'settings') {
+    settingsPage.classList.add('active');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// CARD FLIP
+// Front face has onclick → flipCard to show back
+// Close button on back has onclick → flipCard to show front
+// Back interactive rows use event.stopPropagation() — no conflict
+// ═══════════════════════════════════════════════════════════
+const _flippedCards = new Set();
+
+function flipCard(cardId) {
+  // Guard: if the carousel dragged more than 8px, ignore — was a swipe not a tap
+  if (Math.abs(_cx - _startOff) > 8) return;
+  const card = document.getElementById('fc-' + cardId);
+  if (!card) return;
+  if (_flippedCards.has(cardId)) {
+    _flippedCards.delete(cardId);
+    card.classList.remove('flipped');
+  } else {
+    _flippedCards.add(cardId);
+    card.classList.add('flipped');
+    renderCardBack(cardId);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// CARD META + BACK RENDERING
+// ═══════════════════════════════════════════════════════════
+const CARD_META = {
+  citi_rewards:    { name:'Citi Rewards',           ptsLabel:'ThankYou Points',  rate:'10,000 pts → 4,000 miles',      rateBadge:'×0.4',   dotColor:'rgba(160,60,60,0.70)',  isUOB:false, isHSBC:false },
+  hsbc_revolution: { name:'HSBC Revolution',        ptsLabel:'Reward Points',    rate:'30,000 pts → 10,000 miles',     rateBadge:'×0.333', dotColor:'rgba(100,60,140,0.70)', isUOB:false, isHSBC:true  },
+  uob_preferred:   { name:'UOB Preferred Platinum', ptsLabel:'UNI$ Pool',        rate:'1 UNI$ → 0.4 KrisFlyer miles',  rateBadge:'×0.4',   dotColor:'rgba(50,80,140,0.70)',  isUOB:true,  isHSBC:false },
+  uob_ladys:       { name:"UOB Lady's Card",        ptsLabel:'UNI$ Pool',        rate:'Pooled with Preferred Platinum', rateBadge:'×0.4',   dotColor:'rgba(50,80,140,0.70)',  isUOB:true,  isHSBC:false },
+};
+
+function renderCardBack(cardId) {
+  const body = document.getElementById('back-body-' + cardId);
+  if (!body) return;
+  const c    = appData.cards[cardId];
+  const meta = CARD_META[cardId];
+  const ps   = getPaymentState(cardId);
+  const exp  = getExpiryState(cardId);
+  const miles = cardId.startsWith('uob') ? calcUOBPool().miles : calcMiles(cardId);
+  const delta = (c.points !== null && c.points_prev !== null) ? c.points - c.points_prev : null;
+  const stmtText = c.statement_day ? `${c.statement_day}${ordinal(c.statement_day)} of month` : 'Not set';
+  const deltaHtml = delta === null ? '' : delta > 0
+    ? `<span style="color:var(--accent);font-size:11px;font-weight:600;margin-top:1px">+${formatNum(delta)} this month</span>`
+    : delta < 0 ? `<span style="color:var(--red);font-size:11px;font-weight:600;margin-top:1px">${formatNum(delta)} this month</span>` : '';
+
+  let uploadHTML = '';
+  if (meta.isHSBC) {
+    uploadHTML = `<button class="back-upload-btn hsbc-manual" onclick="event.stopPropagation();toggleBackManual('${cardId}')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Enter Points Balance</button>`;
+  } else if (meta.isUOB && cardId === 'uob_ladys') {
+    uploadHTML = `<div class="uob-pool-note">UNI$ pool shared — upload via Preferred Platinum</div>`;
+  } else {
+    const lbl = meta.isUOB ? 'Upload Combined UOB PDF' : 'Upload Statement';
+    uploadHTML = `<button class="back-upload-btn" id="back-upload-btn-${cardId}" onclick="event.stopPropagation();triggerUpload('${cardId}')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      ${lbl}</button>`;
+  }
+
+  body.innerHTML = `
+    <div class="back-row" style="cursor:default">
+      <div class="back-row-left">
+        <span class="back-row-label">${meta.ptsLabel}</span>
+        <span class="back-row-value">${c.points !== null ? formatNum(c.points) : '—'}</span>
+        ${deltaHtml}
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:9px;font-weight:600;letter-spacing:0.10em;text-transform:uppercase;color:var(--text-3);margin-bottom:2px">Miles</div>
+        <div style="font-size:18px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums">${miles !== null ? formatNum(miles) : '—'}</div>
+      </div>
+    </div>
+    <div class="back-row ${ps.state}" id="back-payment-${cardId}" onclick="event.stopPropagation();togglePayment('${cardId}')">
+      <div class="back-row-left">
+        <span class="back-row-label">Payment</span>
+        <span class="back-row-value" id="back-payment-text-${cardId}">${ps.label}</span>
+      </div>
+      <div class="toggle-sw" id="back-toggle-${cardId}"></div>
+    </div>
+    <div class="back-row ${exp.cls}" id="back-expiry-${cardId}" onclick="event.stopPropagation();openExpiryModal('${cardId}')">
+      <div class="back-row-left">
+        <span class="back-row-label">Points Expiry</span>
+        <span class="back-row-value" id="back-expiry-text-${cardId}">${exp.text}</span>
+      </div>
+      <span style="width:18px;height:18px;flex-shrink:0">${exp.icon}</span>
+    </div>
+    <div class="back-row" style="cursor:default">
+      <div class="back-row-left">
+        <span class="back-row-label">Statement Day</span>
+        <span class="back-row-value" id="back-stmt-${cardId}">${stmtText}</span>
+      </div>
+      <button class="back-edit-btn" onclick="event.stopPropagation();openStmtDayModal('${cardId}')">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit
+      </button>
+    </div>
+    ${uploadHTML}
+    <div class="back-manual-row ${meta.isHSBC && c.points===null?'visible':''}" id="back-manual-${cardId}">
+      <input type="number" class="back-manual-input" id="back-manual-input-${cardId}"
+        placeholder="${meta.isHSBC?'e.g. 25409':meta.isUOB?'e.g. 30391':'e.g. 24000'}" min="0">
+      <button class="back-manual-save" onclick="event.stopPropagation();saveBackManual('${cardId}')">Save</button>
+    </div>
+    <div class="back-parse-result" id="back-parse-${cardId}"></div>`;
+}
+
+function ordinal(n) {
+  const s = ['th','st','nd','rd'], v = n%100;
+  return s[(v-20)%10] || s[v] || s[0];
+}
+function toggleBackManual(id) {
+  const r = document.getElementById('back-manual-' + id);
+  if (r) { r.classList.toggle('visible'); document.getElementById('back-manual-input-'+id)?.focus(); }
+}
+function saveBackManual(id) {
+  const val = parseInt(document.getElementById('back-manual-input-'+id).value);
+  if (isNaN(val)||val<0){showToast('Enter a valid number');return;}
+  updatePoints(id, val);
+  document.getElementById('back-manual-'+id).classList.remove('visible');
+  document.getElementById('back-manual-input-'+id).value='';
+  flashCard(id, true);
+  renderCardBack(id);
+  renderAll();
+  showToast(CARD_META[id].name+' updated');
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER ALL
+// ═══════════════════════════════════════════════════════════
+function renderAll() {
+  const total = calcTotalMiles();
+  const hasAnyData = cardIds.some(id => appData.cards[id].points !== null);
+  if (hasAnyData) {
+    animateHero(total);
+    document.getElementById('hero-sub').textContent = total > 0 ? 'across all cards' : 'Upload statements to get started';
+  } else {
+    document.getElementById('hero-miles').textContent = '—';
+    document.getElementById('hero-sub').textContent = 'Upload your statements to get started';
+  }
+
+  const mk = monthKey(), uploads = appData.uploads_this_month || {};
+  let count = 0;
+  if (uploads['citi_rewards'] === mk) count++;
+  if (uploads['hsbc_revolution'] === mk) count++;
+  // UOB Preferred and Lady's share one combined PDF — count as 1
+  if (uploads['uob_preferred'] === mk || uploads['uob_ladys'] === mk) count++;
+  const badge = document.getElementById('completion-badge');
+  badge.textContent = `${count} / 3 PDFs`;
+  badge.className = count === 3 ? 'top-badge' : 'top-badge incomplete';
+
+  const nudge = computeNudge();
+  const nudgeEl = document.getElementById('nudge-bar');
+  if (nudge) {
+    const cls = nudge.cls==='nudge-red'?'red':nudge.cls==='nudge-amber'?'amber':'info';
+    nudgeEl.className = cls;  // ID handles base styles, class drives colour variant
+    nudgeEl.style.display = 'block';
+    nudgeEl.textContent = nudge.text;
+  } else {
+    nudgeEl.className = '';
+    nudgeEl.style.display = 'none';
+  }
+
+  // Non-UOB cards
+  ['citi_rewards','hsbc_revolution'].forEach(id => {
+    const c = appData.cards[id];
+    document.getElementById('card-pts-'+id).textContent   = c.points!==null ? formatNum(c.points) : '—';
+    document.getElementById('card-miles-'+id).textContent = calcMiles(id)!==null ? formatNum(calcMiles(id)) : '—';
+  });
+  // UOB pool
+  const pool = calcUOBPool();
+  ['uob_preferred','uob_ladys'].forEach(id => {
+    document.getElementById('card-pts-'+id).textContent   = pool.unis  > 0 ? formatNum(pool.unis)  : '—';
+    document.getElementById('card-miles-'+id).textContent = pool.miles > 0 ? formatNum(pool.miles) : '—';
+  });
+  // Re-render open backs
+  _flippedCards.forEach(id => renderCardBack(id));
+}
+
+function flashCard(cardId, success) {
+  const check = document.getElementById('check-'+cardId);
+  if (success) { check?.classList.add('show'); setTimeout(()=>check?.classList.remove('show'),1500); }
+}
+function showParseResult(cardId, msg, success) {
+  const el = document.getElementById('back-parse-'+cardId);
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'back-parse-result '+(success?'success':'error');
+  if (!success) document.getElementById('back-manual-input-'+cardId)?.classList.add('highlight');
+  setTimeout(()=>{el.className='back-parse-result';},6000);
+}
+function setUploadLoading(cardId, loading) {
+  const btn = document.getElementById('back-upload-btn-'+cardId);
+  if (!btn) return;
+  if (loading) {
+    btn.classList.add('loading');
+    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Parsing...';
+  } else {
+    btn.classList.remove('loading');
+    btn.innerHTML = cardId.startsWith('uob') ? 'Upload Combined UOB PDF' : 'Upload Statement';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════════════════════
+function renderHistoryRows() {
+  const container = document.getElementById('history-card-list');
+  if (!container) return;
+  const pool = calcUOBPool();
+  container.innerHTML = cardIds.map(id => {
+    const c=appData.cards[id], meta=CARD_META[id];
+    const miles = id.startsWith('uob') ? pool.miles : calcMiles(id);
+    const pts   = id.startsWith('uob') ? pool.unis  : c.points;
+    const updated = c.last_updated ? `Updated ${formatDate(c.last_updated)}` : 'Not yet uploaded';
+    return `<div class="history-card-row">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${meta.dotColor};flex-shrink:0"></div>
+        <div>
+          <div class="history-card-name">${meta.name}</div>
+          <div class="history-card-pts">${pts!==null?formatNum(pts)+' '+meta.ptsLabel:'No data'}</div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="history-card-miles">${miles!==null?formatNum(miles):'—'}</div>
+        <div class="history-card-updated">${updated}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getGraphColor(id) {
+  if (id==='citi_rewards')    return '#E5484D';
+  if (id==='hsbc_revolution') return '#DB2777';
+  if (id==='uob_preferred')   return '#3B82F6';
+  return '#60A5FA';
+}
+
+function drawGraph() {
+  const canvas = document.getElementById('graph-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio||1;
+  const W = canvas.parentElement.clientWidth - 36, H = 180;
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H);
+
+  const allSeries = cardIds.map(id=>({id,history:getPointsHistory(id),color:getGraphColor(id)}));
+  let allDates = [...new Set(allSeries.flatMap(s=>s.history.map(p=>p.key)))].sort();
+
+  if (!allDates.length) {
+    ctx.fillStyle='rgba(238,242,248,0.20)'; ctx.font='13px Urbanist,system-ui,sans-serif';
+    ctx.textAlign='center'; ctx.fillText('No history yet — upload a statement',W/2,H/2); return;
+  }
+
+  const aligned = allSeries.map(s=>{
+    const map={}; 
+    s.history.forEach(p=>{
+      // Convert raw points to miles for consistent Y axis
+      let miles;
+      if (s.id === 'citi_rewards')    miles = CONVERSION.citi_rewards(p.points);
+      else if (s.id === 'hsbc_revolution') miles = CONVERSION.hsbc_revolution(p.points);
+      else miles = CONVERSION.uob_pool(p.points); // UOB — points are already pool UNI$
+      map[p.key] = miles;
+    });
+    return{...s,values:allDates.map(d=>map[d]??null)};
+  });
+  const allVals = aligned.flatMap(s=>s.values.filter(v=>v!==null));
+  const maxVal  = Math.max(...allVals,1);
+  const pad={top:12,right:12,bottom:28,left:40}, n=allDates.length;
+  const gW=W-pad.left-pad.right, gH=H-pad.top-pad.bottom;
+
+  [0,0.25,0.5,0.75,1].forEach(t=>{
+    const y=pad.top+gH*(1-t);
+    ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(pad.left,y); ctx.lineTo(pad.left+gW,y); ctx.stroke();
+    if(t>0){ctx.fillStyle='rgba(238,242,248,0.28)';ctx.font='500 10px Urbanist,system-ui';ctx.textAlign='right';ctx.fillText(formatNum(Math.round(maxVal*t)),pad.left-5,y+4);}
+  });
+  ctx.fillStyle='rgba(238,242,248,0.28)';ctx.font='500 10px Urbanist,system-ui';ctx.textAlign='center';
+  allDates.forEach((d,i)=>{
+    if(n<=6||i%Math.ceil(n/5)===0){
+      const x=pad.left+(n===1?gW/2:(i/(n-1))*gW);
+      ctx.fillText(d.slice(0,7),x,H-6);
+    }
+  });
+  aligned.forEach(s=>{
+    ctx.strokeStyle=s.color; ctx.lineWidth=2; ctx.lineJoin='round'; ctx.lineCap='round';
+    ctx.beginPath(); let started=false;
+    s.values.forEach((v,i)=>{
+      if(v===null)return;
+      const x=pad.left+(n===1?gW/2:(i/(n-1))*gW), y=pad.top+gH*(1-v/maxVal);
+      started?(ctx.lineTo(x,y)):(ctx.moveTo(x,y),started=true);
+    }); ctx.stroke();
+    s.values.forEach((v,i)=>{
+      if(v===null)return;
+      const x=pad.left+(n===1?gW/2:(i/(n-1))*gW), y=pad.top+gH*(1-v/maxVal);
+      ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fillStyle=s.color; ctx.fill();
+    });
+  });
+  const legend=document.getElementById('graph-legend');
+  if(legend) legend.innerHTML=aligned.map(s=>`<div class="legend-item"><div class="legend-dot" style="background:${s.color}"></div>${CARD_META[s.id].name}</div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CAROUSEL SWIPE ENGINE
+// ═══════════════════════════════════════════════════════════
+const _rail = document.getElementById('cards-list');
+const _wrap = document.getElementById('card-carousel-wrap');
+const _dots = document.querySelectorAll('.c-dot');
+
+let _cx=0, _activeIdx=0, _dragging=false;
+let _startX=0, _startY=0, _startOff=0;
+let _animating=false, _intentSet=false, _isHoriz=false;
+
+function _cardW() {
+  const el = _rail.querySelector('.flip-card');
+  if (!el) return Math.min(window.innerWidth - 80, 280) + 20;
+  return el.offsetWidth + 20; // card + gap
+}
+function _minOff() { return -(_cardW() * (cardIds.length - 1)); }
+// Cards start at x=20 (rail padding-left). Snap so active card aligns to padding edge.
+// idx=0 → 0 (padding holds it in place), idx=1 → -(cardW), etc.
+function _snapX(idx) { return -(idx * _cardW()); }
+
+function _easeToCard(tx, dur=300) {
+  _animating=true;
+  const from=_cx, dist=tx-from, t0=performance.now();
+  (function f(now){
+    const t=Math.min((now-t0)/dur,1), e=1-Math.pow(1-t,3);
+    _cx=from+dist*e; _rail.style.transform=`translateX(${_cx}px)`;
+    t<1?requestAnimationFrame(f):(_cx=tx,_rail.style.transform=`translateX(${tx}px)`,_animating=false);
+  })(t0);
+}
+
+function _goTo(idx, animate=true) {
+  idx = Math.max(0, Math.min(cardIds.length - 1, idx));
+
+  // Flip the current card back to front before leaving it
+  if (idx !== _activeIdx) {
+    const leavingId = cardIds[_activeIdx];
+    if (_flippedCards.has(leavingId)) {
+      _flippedCards.delete(leavingId);
+      const el = document.getElementById('fc-' + leavingId);
+      if (el) el.classList.remove('flipped');
+    }
+  }
+
+  _activeIdx = idx;
+  _dots.forEach((d, i) => d.className = 'c-dot' + (i === idx ? ' active' : ''));
+  animate ? _easeToCard(_snapX(idx)) : (_cx = _snapX(idx), _rail.style.transform = `translateX(${_cx}px)`);
+}
+
+// Touch
+_wrap.addEventListener('touchstart',e=>{
+  if(_animating)return;
+  const t=e.touches[0];
+  _dragging=true;_intentSet=false;_isHoriz=false;
+  _startX=t.clientX;_startY=t.clientY;_startOff=_cx;
+  _rail.querySelectorAll('.flip-card').forEach(c=>c.style.transition='none');
+},{passive:true});
+
+_wrap.addEventListener('touchmove',e=>{
+  if(!_dragging)return;
+  const dx=e.touches[0].clientX-_startX, dy=e.touches[0].clientY-_startY;
+  if(!_intentSet&&(Math.abs(dx)>5||Math.abs(dy)>5)){_intentSet=true;_isHoriz=Math.abs(dx)>Math.abs(dy)*1.2;}
+  if(!_isHoriz)return;
+  e.preventDefault();
+  let nx=_startOff+dx;
+  if(nx>0)nx=nx*0.25;
+  if(nx<_minOff())nx=_minOff()+(nx-_minOff())*0.25;
+  _cx=nx;_rail.style.transform=`translateX(${nx}px)`;
+},{passive:false});
+
+_wrap.addEventListener('touchend',e=>{
+  if(!_dragging)return;
+  _dragging=false;
+  _rail.querySelectorAll('.flip-card').forEach(c=>c.style.transition='');
+  if(!_isHoriz)return;
+  const dx=e.changedTouches[0].clientX-_startX;
+  let next=_activeIdx;
+  if(dx<-40)next++;if(dx>40)next--;
+  _goTo(next);
+},{passive:true});
+
+_wrap.addEventListener('touchcancel',()=>{
+  _dragging=false;
+  _rail.querySelectorAll('.flip-card').forEach(c=>c.style.transition='');
+  _goTo(_activeIdx);
+},{passive:true});
+
+// Mouse
+_wrap.addEventListener('mousedown',e=>{
+  if(_animating)return;
+  _dragging=true;_isHoriz=true;
+  _startX=e.clientX;_startOff=_cx;
+  _rail.querySelectorAll('.flip-card').forEach(c=>c.style.transition='none');
+  e.preventDefault();
+});
+window.addEventListener('mousemove',e=>{
+  if(!_dragging)return;
+  let nx=_startOff+(e.clientX-_startX);
+  if(nx>0)nx=nx*0.25;if(nx<_minOff())nx=_minOff()+(nx-_minOff())*0.25;
+  _cx=nx;_rail.style.transform=`translateX(${nx}px)`;
+});
+window.addEventListener('mouseup',e=>{
+  if(!_dragging)return;
+  _dragging=false;
+  _rail.querySelectorAll('.flip-card').forEach(c=>c.style.transition='');
+  const dx=e.clientX-_startX;
+  let next=_activeIdx;
+  if(dx<-40)next++;if(dx>40)next--;
+  _goTo(next);
+});
+window.addEventListener('resize',()=>_goTo(_activeIdx,false));
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+function init() {
+  if (!appData.onboarding_complete) { startOnboarding(); }
+  else { renderAll(); }
+  requestAnimationFrame(() => _goTo(0, false));
+}
+init();
+
+function handleDebugFile(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const out = document.getElementById("debug-output"); if(out){out.style.display="block";out.textContent="Reading PDF...";}
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const pdf = await pdfjsLib.getDocument({data:e.target.result}).promise;
+      let text = "";
+      for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const tc=await pg.getTextContent();text+=tc.items.map(it=>it.str).join(" ")+"\n---PAGE---\n";}
+      if(out)out.textContent=text;
+    } catch(err){if(out)out.textContent="Error: "+err.message;}
+  };
+  reader.readAsArrayBuffer(file);
+  event.target.value="";
+}
+
+</script>
+</body>
+</html>
