@@ -274,13 +274,9 @@ body {
 .card-hsbc .flip-front {
   background: linear-gradient(160deg, #A8A0C0 0%, #9490B4 25%, #8880A8 50%, #9890B8 75%, #B0A8C8 100%);
 }
-/* UOB Preferred — steel blue silver */
-.card-uob-p .flip-front {
-  background: linear-gradient(160deg, #98A8C0 0%, #8898B0 25%, #7888A4 50%, #8898B4 75%, #A0B0C4 100%);
-}
-/* UOB Lady's — champagne silver */
-.card-uob-l .flip-front {
-  background: linear-gradient(160deg, #C4B898 0%, #B4A888 25%, #A89878 50%, #B8A888 75%, #C8B8A0 100%);
+/* UOB pool — steel blue (Preferred) blending into champagne (Lady's) */
+.card-uob .flip-front {
+  background: linear-gradient(160deg, #98A8C0 0%, #8898B0 28%, #9C9A98 55%, #B4A888 78%, #C8B8A0 100%);
 }
 
 /* All text on metal cards is dark (contrast on light metal) */
@@ -350,6 +346,42 @@ body {
   align-self: flex-end;
 }
 
+/* Narrow cards: keep labels on one line, compact the update button */
+.flip-card { container-type: inline-size; }
+.card-stat-label, .card-flip-hint { white-space: nowrap; }
+@container (max-width: 270px) {
+  .flip-front { padding: 22px 20px 22px; }
+  .card-flip-hint .hint-text { display: none; }
+  .card-update-btn { padding: 10px 13px; }
+  .card-update-btn span { display: none; }
+}
+
+/* Rate pill now sits under the card name */
+.card-mid .card-rate-pill { display: inline-block; align-self: auto; margin-top: 10px; }
+.card-name-sub {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
+  color: rgba(0,0,0,0.55); margin-top: 6px;
+}
+
+/* One-tap update on the card front */
+.card-update-btn {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; gap: 6px;
+  min-height: 44px; padding: 10px 16px; border-radius: 100px;
+  border: 1px solid transparent; background: rgba(8,12,20,0.82); color: #fff;
+  font: 700 13px/1 'Urbanist', system-ui, sans-serif; letter-spacing: 0.01em;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.22); cursor: pointer;
+  transition: transform 0.12s, opacity 0.18s, background 0.18s;
+}
+.card-update-btn:active { transform: scale(0.96); }
+.card-update-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.card-update-btn.is-current {
+  background: rgba(255,255,255,0.40); color: rgba(0,0,0,0.68);
+  border-color: rgba(0,0,0,0.12); box-shadow: none;
+}
+.card-update-btn.loading { opacity: 0.6; pointer-events: none; }
+.flip-front:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
 /* Flash overlay */
 .check-overlay {
   position: absolute; inset: 0;
@@ -395,8 +427,7 @@ body {
 /* Per-card metal tints — back matches front */
 .card-citi  .flip-back { background: linear-gradient(160deg, #C8A8A0 0%, #B89490 25%, #A87E7A 50%, #C0908A 75%, #D0A8A2 100%); }
 .card-hsbc  .flip-back { background: linear-gradient(160deg, #A8A0C0 0%, #9490B4 25%, #8880A8 50%, #9890B8 75%, #B0A8C8 100%); }
-.card-uob-p .flip-back { background: linear-gradient(160deg, #98A8C0 0%, #8898B0 25%, #7888A4 50%, #8898B4 75%, #A0B0C4 100%); }
-.card-uob-l .flip-back { background: linear-gradient(160deg, #C4B898 0%, #B4A888 25%, #A89878 50%, #B8A888 75%, #C8B8A0 100%); }
+.card-uob   .flip-back { background: linear-gradient(160deg, #98A8C0 0%, #8898B0 28%, #9C9A98 55%, #B4A888 78%, #C8B8A0 100%); }
 
 .card-back-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -489,31 +520,14 @@ body {
 }
 .back-upload-btn:active { transform: scale(0.98); opacity: 0.80; }
 .back-upload-btn.loading { opacity: 0.45; pointer-events: none; }
+.back-upload-btn.secondary,
 .back-upload-btn.hsbc-manual {
   background: rgba(255,255,255,0.35); color: rgba(0,0,0,0.65);
   border: 1px solid rgba(0,0,0,0.18);
 }
-.back-manual-row { display: none; gap: 8px; }
-.back-manual-row.visible { display: flex; }
-.back-manual-input {
-  flex: 1; padding: 11px 13px; border-radius: 10px;
-  border: 1px solid rgba(0,0,0,0.20); background: rgba(255,255,255,0.45);
-  font-size: 16px; font-family: inherit; color: rgba(0,0,0,0.80); outline: none;
-}
-.back-manual-input:focus { border-color: rgba(0,0,0,0.50); }
-.back-manual-save {
-  padding: 11px 15px; border-radius: 10px; background: rgba(0,0,0,0.70);
-  color: #ffffff; font-size: 13px; font-weight: 700;
-  border: none; cursor: pointer; font-family: inherit;
-}
 .back-parse-result { font-size: 11px; padding: 7px 9px; border-radius: 7px; display: none; }
 .back-parse-result.success { display: block; background: rgba(52,200,138,0.25); color: rgba(0,100,60,0.90); }
 .back-parse-result.error   { display: block; background: rgba(240,96,96,0.20);  color: rgba(160,40,40,0.90); }
-.uob-pool-note {
-  font-size: 11px; color: rgba(0,0,0,0.55); text-align: center;
-  padding: 8px 10px; background: rgba(255,255,255,0.30); border-radius: 8px;
-  border: 1px solid rgba(0,0,0,0.12); line-height: 1.5;
-}
 
 /* ── DOTS ── */
 #carousel-dots {
@@ -656,6 +670,52 @@ body {
 .modal-btn-primary   { flex: 1; padding: 15px; border-radius: 12px; background: var(--accent); color: #050C14; font-size: 15px; font-weight: 700; border: none; cursor: pointer; min-height: 52px; font-family: inherit; }
 .modal-btn-secondary { padding: 15px 18px; border-radius: 12px; background: var(--surface2); color: var(--text-2); font-size: 15px; font-weight: 600; border: 1px solid var(--border); cursor: pointer; font-family: inherit; }
 
+/* ── MANUAL BALANCE SHEET ── */
+.modal-sub.is-error { color: #F0A0A0; }
+.points-preview { font-size: 13px; font-weight: 600; color: var(--accent); margin-top: 8px; min-height: 18px; font-variant-numeric: tabular-nums; }
+
+/* ── THIS MONTH SHEET ── */
+.modal-tall { max-height: 90vh; overflow-y: auto; }
+.top-badge { font-family: inherit; cursor: pointer; }
+button.top-badge { -webkit-appearance: none; appearance: none; }
+.month-progress { height: 4px; border-radius: 2px; background: var(--surface3); overflow: hidden; margin: -6px 0 18px; }
+#month-progress-fill { height: 100%; width: 0; background: var(--accent); border-radius: 2px; transition: width 0.35s ease; }
+.task-group {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 2px 14px; margin-bottom: 10px;
+}
+.task-group-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 0 8px; }
+.task-group-name { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; }
+.task-group-head small { font-size: 12px; font-weight: 600; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.task-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.task-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--border); }
+.task-check {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  border: 1.5px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+}
+.task-row.done .task-check { background: var(--accent); border-color: var(--accent); }
+.task-body { flex: 1; min-width: 0; }
+.task-title { font-size: 14px; font-weight: 700; }
+.task-row.done .task-title { color: var(--text-2); }
+.task-meta { font-size: 12px; color: var(--text-3); margin-top: 2px; line-height: 1.4; }
+.task-meta.warn  { color: #E8BC60; }
+.task-meta.alert { color: #F09090; }
+.task-btn {
+  flex-shrink: 0; min-height: 40px; padding: 9px 14px; border-radius: 10px;
+  border: 1px solid transparent; background: var(--accent); color: #050C14;
+  font: 700 13px/1 'Urbanist', system-ui, sans-serif; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+}
+.task-btn.ghost { background: transparent; color: var(--text-2); border-color: var(--border2); }
+.task-btn.loading { opacity: 0.6; pointer-events: none; }
+.task-btn:focus-visible, .task-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.task-link {
+  background: none; border: none; padding: 0; cursor: pointer;
+  color: var(--accent); font: 600 12px 'Urbanist', system-ui, sans-serif;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+
 /* ── ONBOARDING ── */
 #onboarding-overlay {
   position: fixed; inset: 0; background: var(--bg); z-index: 300;
@@ -710,6 +770,7 @@ body {
   box-shadow: 0 4px 20px rgba(0,0,0,0.45); border: 1px solid var(--border2);
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+body.modal-open #toast { bottom: auto; top: calc(14px + var(--sat)); }
 
 /* ── ANIMATIONS ── */
 @keyframes pulse-red   { 0%,100%{box-shadow:0 0 0 0 rgba(240,96,96,0)} 50%{box-shadow:0 0 0 4px rgba(240,96,96,0.16)} }
@@ -775,6 +836,35 @@ input[type=file] { display: none; }
   </div>
 </div>
 
+<div class="modal-overlay" id="points-modal">
+  <div class="modal" role="dialog" aria-labelledby="points-modal-title">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="points-modal-title">Balance</div>
+    <div class="modal-sub" id="points-modal-sub"></div>
+    <div class="modal-field">
+      <label class="modal-label" for="points-input" id="points-modal-label">Points</label>
+      <input type="text" inputmode="numeric" autocomplete="off" class="modal-input" id="points-input" placeholder="e.g. 25,000">
+      <div class="points-preview" id="points-preview"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" onclick="closeModal('points-modal')">Cancel</button>
+      <button class="modal-btn-primary"   onclick="savePointsSheet()">Save balance</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="month-modal">
+  <div class="modal modal-tall" role="dialog" aria-labelledby="month-modal-title">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="month-modal-title">This month</div>
+    <div class="modal-sub" id="month-sub"></div>
+    <div class="month-progress"><div id="month-progress-fill"></div></div>
+    <div id="month-list"></div>
+    <div class="modal-actions">
+      <button class="modal-btn-primary" onclick="closeModal('month-modal')">Done</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ APP SHELL ═══ -->
 <div id="app">
 
@@ -786,7 +876,7 @@ input[type=file] { display: none; }
       </div>
       <span class="top-wordmark-text">Miles</span>
     </div>
-    <span class="top-badge incomplete" id="completion-badge" title="Balances updated this month">0 / 3 updated</span>
+    <button class="top-badge incomplete" id="completion-badge" onclick="openMonthSheet()" aria-haspopup="dialog">This month</button>
   </div>
 
   <!-- HERO -->
@@ -803,11 +893,9 @@ input[type=file] { display: none; }
   <div id="card-area">
     <div id="card-carousel-wrap">
       <div id="cards-list">
-
-        <!-- CITI REWARDS -->
         <div class="flip-card card-citi" id="fc-citi_rewards">
           <div class="flip-inner" id="fi-citi_rewards">
-            <div class="flip-front" onclick="flipCard('citi_rewards')">
+            <div class="flip-front" onclick="flipCard('citi_rewards')" role="button" tabindex="0" aria-label="Citibank Rewards details">
               <div class="check-overlay" id="check-citi_rewards">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1a7a50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
@@ -815,11 +903,12 @@ input[type=file] { display: none; }
                 <span class="card-bank-name">Citibank</span>
                 <span class="card-flip-hint">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-                  Tap to flip
+                  <span class="hint-text">Tap for details</span>
                 </span>
               </div>
               <div class="card-mid">
                 <div class="card-name-big">Rewards</div>
+                <span class="card-rate-pill">× 0.4</span>
               </div>
               <div class="card-bottom">
                 <div class="card-bottom-left">
@@ -832,7 +921,7 @@ input[type=file] { display: none; }
                     <span class="card-stat-value miles" id="card-miles-citi_rewards">—</span>
                   </div>
                 </div>
-                <div class="card-rate-pill">× 0.4</div>
+                <button class="card-update-btn" id="front-update-citi_rewards" data-upload-for="citi_rewards" onclick="event.stopPropagation();quickUpdate('citi_rewards')"><span>Update</span></button>
               </div>
             </div>
             <div class="flip-back" id="back-citi_rewards">
@@ -841,7 +930,7 @@ input[type=file] { display: none; }
                   <div style="width:8px;height:8px;border-radius:50%;background:var(--citi);flex-shrink:0"></div>
                   Citibank Rewards
                 </div>
-                <div class="card-back-close" onclick="flipCard('citi_rewards')">
+                <div class="card-back-close" onclick="flipCard('citi_rewards')" role="button" aria-label="Close details">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </div>
               </div>
@@ -850,10 +939,9 @@ input[type=file] { display: none; }
           </div>
         </div>
 
-        <!-- HSBC REVOLUTION -->
         <div class="flip-card card-hsbc" id="fc-hsbc_revolution">
           <div class="flip-inner" id="fi-hsbc_revolution">
-            <div class="flip-front" onclick="flipCard('hsbc_revolution')">
+            <div class="flip-front" onclick="flipCard('hsbc_revolution')" role="button" tabindex="0" aria-label="HSBC Revolution details">
               <div class="check-overlay" id="check-hsbc_revolution">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1a7a50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
@@ -861,11 +949,12 @@ input[type=file] { display: none; }
                 <span class="card-bank-name">HSBC</span>
                 <span class="card-flip-hint">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-                  Tap to flip
+                  <span class="hint-text">Tap for details</span>
                 </span>
               </div>
               <div class="card-mid">
                 <div class="card-name-big">Revolution</div>
+                <span class="card-rate-pill">× 0.333</span>
               </div>
               <div class="card-bottom">
                 <div class="card-bottom-left">
@@ -878,7 +967,7 @@ input[type=file] { display: none; }
                     <span class="card-stat-value miles" id="card-miles-hsbc_revolution">—</span>
                   </div>
                 </div>
-                <div class="card-rate-pill">× 0.333</div>
+                <button class="card-update-btn" id="front-update-hsbc_revolution" data-upload-for="hsbc_revolution" onclick="event.stopPropagation();quickUpdate('hsbc_revolution')"><span>Update</span></button>
               </div>
             </div>
             <div class="flip-back" id="back-hsbc_revolution">
@@ -887,7 +976,7 @@ input[type=file] { display: none; }
                   <div style="width:8px;height:8px;border-radius:50%;background:var(--hsbc);flex-shrink:0"></div>
                   HSBC Revolution
                 </div>
-                <div class="card-back-close" onclick="flipCard('hsbc_revolution')">
+                <div class="card-back-close" onclick="flipCard('hsbc_revolution')" role="button" aria-label="Close details">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </div>
               </div>
@@ -896,94 +985,49 @@ input[type=file] { display: none; }
           </div>
         </div>
 
-        <!-- UOB PREFERRED -->
-        <div class="flip-card card-uob-p" id="fc-uob_preferred">
-          <div class="flip-inner" id="fi-uob_preferred">
-            <div class="flip-front" onclick="flipCard('uob_preferred')">
-              <div class="check-overlay" id="check-uob_preferred">
+        <div class="flip-card card-uob" id="fc-uob">
+          <div class="flip-inner" id="fi-uob">
+            <div class="flip-front" onclick="flipCard('uob')" role="button" tabindex="0" aria-label="UOB Preferred + Lady's details">
+              <div class="check-overlay" id="check-uob">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1a7a50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <div class="card-top">
                 <span class="card-bank-name">UOB</span>
                 <span class="card-flip-hint">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-                  Tap to flip
+                  <span class="hint-text">Tap for details</span>
                 </span>
               </div>
               <div class="card-mid">
-                <div class="card-name-big">Preferred<br>Platinum</div>
+                <div class="card-name-big">UNI$<br>Pool</div>
+                <div class="card-name-sub">Preferred Platinum + Lady's</div>
+                <span class="card-rate-pill">× 2</span>
               </div>
               <div class="card-bottom">
                 <div class="card-bottom-left">
                   <div class="card-stat">
-                    <span class="card-stat-label">UNI$ Pool</span>
-                    <span class="card-stat-value" id="card-pts-uob_preferred">—</span>
+                    <span class="card-stat-label">UNI$</span>
+                    <span class="card-stat-value" id="card-pts-uob">—</span>
                   </div>
                   <div class="card-stat">
                     <span class="card-stat-label">KrisFlyer Miles</span>
-                    <span class="card-stat-value miles" id="card-miles-uob_preferred">—</span>
+                    <span class="card-stat-value miles" id="card-miles-uob">—</span>
                   </div>
                 </div>
-                <div class="card-rate-pill">× 2</div>
+                <button class="card-update-btn" id="front-update-uob" data-upload-for="uob" onclick="event.stopPropagation();quickUpdate('uob')"><span>Update</span></button>
               </div>
             </div>
-            <div class="flip-back" id="back-uob_preferred">
+            <div class="flip-back" id="back-uob">
               <div class="card-back-header">
                 <div class="card-back-name">
                   <div style="width:8px;height:8px;border-radius:50%;background:var(--uob);flex-shrink:0"></div>
-                  UOB Preferred Platinum
+                  UOB Preferred + Lady's
                 </div>
-                <div class="card-back-close" onclick="flipCard('uob_preferred')">
+                <div class="card-back-close" onclick="flipCard('uob')" role="button" aria-label="Close details">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </div>
               </div>
-              <div class="card-back-body" id="back-body-uob_preferred"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- UOB LADY'S -->
-        <div class="flip-card card-uob-l" id="fc-uob_ladys">
-          <div class="flip-inner" id="fi-uob_ladys">
-            <div class="flip-front" onclick="flipCard('uob_ladys')">
-              <div class="check-overlay" id="check-uob_ladys">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1a7a50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </div>
-              <div class="card-top">
-                <span class="card-bank-name">UOB</span>
-                <span class="card-flip-hint">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-                  Tap to flip
-                </span>
-              </div>
-              <div class="card-mid">
-                <div class="card-name-big">Lady's<br>Card</div>
-              </div>
-              <div class="card-bottom">
-                <div class="card-bottom-left">
-                  <div class="card-stat">
-                    <span class="card-stat-label">UNI$ Pool</span>
-                    <span class="card-stat-value" id="card-pts-uob_ladys">—</span>
-                  </div>
-                  <div class="card-stat">
-                    <span class="card-stat-label">KrisFlyer Miles</span>
-                    <span class="card-stat-value miles" id="card-miles-uob_ladys">—</span>
-                  </div>
-                </div>
-                <div class="card-rate-pill">× 2</div>
-              </div>
-            </div>
-            <div class="flip-back" id="back-uob_ladys">
-              <div class="card-back-header">
-                <div class="card-back-name">
-                  <div style="width:8px;height:8px;border-radius:50%;background:var(--uob);flex-shrink:0"></div>
-                  UOB Lady's Card
-                </div>
-                <div class="card-back-close" onclick="flipCard('uob_ladys')">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </div>
-              </div>
-              <div class="card-back-body" id="back-body-uob_ladys"></div>
+              <div class="card-back-body" id="back-body-uob"></div>
             </div>
           </div>
         </div>
@@ -994,7 +1038,6 @@ input[type=file] { display: none; }
     <!-- DOTS -->
     <div id="carousel-dots">
       <div class="c-dot active"></div>
-      <div class="c-dot"></div>
       <div class="c-dot"></div>
       <div class="c-dot"></div>
     </div>
@@ -1061,9 +1104,7 @@ input[type=file] { display: none; }
 
 <!-- Hidden file inputs -->
 <input type="file" id="file-citi_rewards"    accept=".pdf" onchange="handleFile(event,'citi_rewards')">
-<input type="file" id="file-hsbc_revolution" accept=".pdf" onchange="handleFile(event,'hsbc_revolution')">
-<input type="file" id="file-uob_preferred"   accept=".pdf" onchange="handleFile(event,'uob_preferred')">
-<input type="file" id="file-uob_ladys"       accept=".pdf" onchange="handleFile(event,'uob_ladys')">
+<input type="file" id="file-uob"             accept=".pdf" onchange="handleFile(event,'uob')">
 <input type="file" id="file-import"          accept=".json" onchange="handleImport(event)">
 <input type="file" id="file-debug"           accept=".pdf" onchange="handleDebugFile(event)">
 
@@ -1086,17 +1127,10 @@ const PARSER_CONFIG = {
     label:    'HSBC Reward Points',
     hsbcMode: true
   },
-  uob_preferred: {
+  uob: {
     primary:  ["UNI$", "UNI\$", "REWARDS SUMMARY"],
     fallback: ['Current Balance', 'Rewards Summary'],
-    label:    "UNI$ Pool",
-    uob: true,
-    uobMode: true
-  },
-  uob_ladys: {
-    primary:  ["UNI$", "UNI\$", "REWARDS SUMMARY"],
-    fallback: ['Current Balance', 'Rewards Summary'],
-    label:    "UNI$ Pool",
+    label:    "UNI$",
     uob: true,
     uobMode: true
   }
@@ -1104,21 +1138,14 @@ const PARSER_CONFIG = {
 
 // Conversion rates
 const CONVERSION = {
-  citi_rewards:    pts => Math.floor(pts / 10000 * 4000),   // 10k pts = 4k miles
-  hsbc_revolution: pts => Math.floor(pts / 30000 * 10000),  // 30k pts = 10k miles
-  uob_pool:        unis => Math.floor(unis * 2)              // 1 UNI$ = 2 KrisFlyer miles (5,000 UNI$ = 10,000 miles)
+  citi_rewards:    pts  => Math.floor(pts / 10000 * 4000),   // 10k pts = 4k miles
+  hsbc_revolution: pts  => Math.floor(pts / 30000 * 10000),  // 30k pts = 10k miles
+  uob:             unis => Math.floor(unis * 2)              // 1 UNI$ = 2 KrisFlyer miles (5,000 UNI$ = 10,000 miles)
 };
 
-// Cards that share one PDF
-const UOB_CARDS = ['uob_preferred', 'uob_ladys'];
-const cardIds   = ['citi_rewards', 'hsbc_revolution', 'uob_preferred', 'uob_ladys'];
-// PDF groups: which cards a single PDF upload covers
-const PDF_GROUPS = {
-  citi_rewards:    ['citi_rewards'],
-  hsbc_revolution: ['hsbc_revolution'],
-  uob_preferred:   ['uob_preferred', 'uob_ladys'],
-  uob_ladys:       ['uob_preferred', 'uob_ladys']
-};
+// Accounts. UOB Preferred Platinum + Lady's share one UNI$ pool and one combined statement,
+// so they're tracked as a single account.
+const cardIds = ['citi_rewards', 'hsbc_revolution', 'uob'];
 
 // ═══════════════════════════════════════════════════════════
 // DATA LAYER
@@ -1152,12 +1179,10 @@ function getInitialData() {
     cards: {
       citi_rewards:    defaultCard(),
       hsbc_revolution: defaultCard(),
-      uob_preferred:   defaultCard(),
-      uob_ladys:       defaultCard()
+      uob:             defaultCard()
     },
     onboarding_complete: false,
-    app_version: '2.1',
-    uploads_this_month: {}
+    app_version: '2.2'
   };
 }
 
@@ -1167,6 +1192,37 @@ migrateData(appData);
 // Bring older saved data up to the current shape. Safe to run repeatedly.
 function migrateData(data) {
   if (!data || !data.cards) return;
+
+  // v2.2: merge uob_preferred + uob_ladys into one 'uob' account
+  if (!data.cards.uob && (data.cards.uob_preferred || data.cards.uob_ladys)) {
+    const p = data.cards.uob_preferred || defaultCard();
+    const l = data.cards.uob_ladys     || defaultCard();
+    const sum = (a, b) => (a == null && b == null) ? null : (a || 0) + (b || 0);
+    const firstOf = (...v) => v.find(x => x != null) ?? null;
+    data.cards.uob = {
+      points:        sum(p.points, l.points),
+      points_prev:   sum(p.points_prev, l.points_prev),
+      expiry:        [p.expiry, l.expiry].filter(Boolean).sort()[0] || null,
+      statement_day: firstOf(p.statement_day, l.statement_day),
+      due_day:       firstOf(p.due_day, l.due_day),
+      paid_for:      firstOf(p.paid_for, l.paid_for),
+      payment_status: p.payment_status, payment_cycle: p.payment_cycle,  // for the v2.0 step below
+      last_updated:  [p.last_updated, l.last_updated].filter(Boolean).sort().pop() || null,
+    };
+    if (data.history) {
+      const hp = data.history.uob_preferred || {}, hl = data.history.uob_ladys || {};
+      const merged = {};
+      new Set([...Object.keys(hp), ...Object.keys(hl)]).forEach(k => { merged[k] = (hp[k] || 0) + (hl[k] || 0); });
+      data.history.uob = merged;
+      delete data.history.uob_preferred;
+      delete data.history.uob_ladys;
+    }
+  }
+  delete data.cards.uob_preferred;
+  delete data.cards.uob_ladys;
+  delete data.uploads_this_month;
+  cardIds.forEach(id => { if (!data.cards[id]) data.cards[id] = defaultCard(); });
+
   Object.keys(data.cards).forEach(id => {
     const c = data.cards[id];
     if (c.due_day === undefined) c.due_day = null;
@@ -1180,7 +1236,7 @@ function migrateData(data) {
     delete c.payment_status;
     delete c.payment_cycle;
   });
-  data.app_version = '2.1';
+  data.app_version = '2.2';
   saveData(data);
 }
 
@@ -1189,27 +1245,12 @@ function migrateData(data) {
 // ═══════════════════════════════════════════════════════════
 function calcMiles(cardId) {
   const c = appData.cards[cardId];
-  if (c.points === null) return null;
-  if (cardId === 'citi_rewards')    return CONVERSION.citi_rewards(c.points);
-  if (cardId === 'hsbc_revolution') return CONVERSION.hsbc_revolution(c.points);
-  return null; // UOB calculated via pool
-}
-
-function calcUOBPool() {
-  const p = appData.cards.uob_preferred.points || 0;
-  const l = appData.cards.uob_ladys.points || 0;
-  return { unis: p + l, miles: CONVERSION.uob_pool(p + l) };
+  if (!c || c.points === null) return null;
+  return CONVERSION[cardId](c.points);
 }
 
 function calcTotalMiles() {
-  let total = 0;
-  const citi  = calcMiles('citi_rewards');
-  const hsbc  = calcMiles('hsbc_revolution');
-  const uob   = calcUOBPool();
-  if (citi  !== null) total += citi;
-  if (hsbc  !== null) total += hsbc;
-  total += uob.miles;
-  return total;
+  return cardIds.reduce((sum, id) => sum + (calcMiles(id) || 0), 0);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1298,7 +1339,8 @@ function getPaymentState(cardId) {
   const stmt    = latestStatementDate(c.statement_day);
   const stmtKey = toISO(stmt);
   if (c.paid_for === stmtKey) {
-    return { state: 'paid', stmtKey, label: `Paid · next statement ${formatDayMonth(nextStatementDate(c.statement_day))}` };
+    const next = formatDayMonth(nextStatementDate(c.statement_day));
+    return { state: 'paid', stmtKey, label: `Paid · next statement ${next}`, short: `Paid · next statement ${next}` };
   }
 
   const due      = dueDateFor(stmt, c.due_day);
@@ -1306,13 +1348,40 @@ function getPaymentState(cardId) {
   const dueText  = formatDayMonth(due.date);
 
   if (due.estimated) {
-    if (daysLeft < 0) return { state: 'due-soon', stmtKey, daysLeft, label: 'Unpaid · set a due day for exact reminders' };
-    return { state: 'upcoming', stmtKey, daysLeft, label: `Likely due ~${dueText} · tap when paid` };
+    if (daysLeft < 0) return { state: 'due-soon', stmtKey, daysLeft, label: 'Unpaid · set a due day for exact reminders', short: 'Due day not set' };
+    return { state: 'upcoming', stmtKey, daysLeft, label: `Likely due ~${dueText} · tap when paid`, short: `Likely due ~${dueText}` };
   }
-  if (daysLeft < 0)   return { state: 'overdue',  stmtKey, daysLeft, label: `Overdue · was due ${dueText}` };
-  if (daysLeft === 0) return { state: 'due-soon', stmtKey, daysLeft, label: 'Due today · tap when paid' };
-  if (daysLeft <= 5)  return { state: 'due-soon', stmtKey, daysLeft, label: `Due in ${daysLeft}d (${dueText}) · tap when paid` };
-  return { state: 'upcoming', stmtKey, daysLeft, label: `Due ${dueText} · tap when paid` };
+  if (daysLeft < 0)   return { state: 'overdue',  stmtKey, daysLeft, label: `Overdue · was due ${dueText}`, short: `Overdue · was due ${dueText}` };
+  if (daysLeft === 0) return { state: 'due-soon', stmtKey, daysLeft, label: 'Due today · tap when paid', short: 'Due today' };
+  if (daysLeft <= 5)  return { state: 'due-soon', stmtKey, daysLeft, label: `Due in ${daysLeft}d (${dueText}) · tap when paid`, short: `Due in ${daysLeft}d · ${dueText}` };
+  return { state: 'upcoming', stmtKey, daysLeft, label: `Due ${dueText} · tap when paid`, short: `Due ${dueText}` };
+}
+
+// ═══════════════════════════════════════════════════════════
+// BALANCE FRESHNESS + MONTHLY TASKS
+// ═══════════════════════════════════════════════════════════
+// A balance is "current" once it's been updated on or after the latest statement date
+// (or since the 1st of the month if no statement day is set).
+function getBalanceState(cardId) {
+  const c = appData.cards[cardId];
+  const t = today();
+  const since = c.statement_day ? latestStatementDate(c.statement_day) : new Date(t.getFullYear(), t.getMonth(), 1);
+  const updated = c.last_updated ? parseLocalDate(c.last_updated) : null;
+  const current = !!updated && updated >= since;
+  let meta;
+  if (current)                meta = `Updated ${formatDayMonth(updated)}`;
+  else if (c.statement_day)   meta = `New statement ${formatDayMonth(since)}` + (updated ? ` · last updated ${formatDayMonth(updated)}` : '');
+  else                        meta = updated ? `Last updated ${formatDayMonth(updated)}` : 'Not updated yet';
+  return { current, meta };
+}
+
+function getMonthTasks() {
+  const tasks = [];
+  cardIds.forEach(id => {
+    tasks.push({ id, kind: 'balance', done: getBalanceState(id).current });
+    tasks.push({ id, kind: 'payment', done: getPaymentState(id).state === 'paid' });
+  });
+  return tasks;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1333,11 +1402,8 @@ function getExpiryState(cardId) {
 // NUDGE LOGIC (priority order)
 // ═══════════════════════════════════════════════════════════
 function computeNudge() {
-  const cards = ['citi_rewards', 'hsbc_revolution', 'uob_preferred', 'uob_ladys'];
-  const cardNames = {
-    citi_rewards: 'Citi Rewards', hsbc_revolution: 'HSBC Revolution',
-    uob_preferred: 'UOB Preferred Platinum', uob_ladys: "UOB Lady's"
-  };
+  const cards = cardIds;
+  const cardNames = Object.fromEntries(cardIds.map(id => [id, CARD_META[id].short]));
 
   // P1: payment past its due date
   for (const id of cards) {
@@ -1352,7 +1418,7 @@ function computeNudge() {
     if (c.expiry) {
       const days = daysUntil(c.expiry);
       if (days >= 0 && days < 30) {
-        const miles = id.startsWith('uob') ? calcUOBPool().miles : calcMiles(id);
+        const miles = calcMiles(id);
         const extra = miles ? ` You have ${formatNum(miles)} KF miles to convert.` : '';
         return { cls: 'nudge-red', cardId: id, text: `${cardNames[id]} points expire in ${days} days.${extra}` };
       }
@@ -1389,10 +1455,10 @@ function computeNudge() {
     }
   }
   // P6: UOB pool has at least one full transfer block (5,000 UNI$ = 10,000 miles)
-  const pool = calcUOBPool();
-  if (pool.unis >= 5000) {
-    const blocks = Math.floor(pool.unis / 5000);
-    return { cls: 'nudge-info', cardId: 'uob_preferred', text: `UOB pool can transfer ${formatNum(blocks * 10000)} KrisFlyer miles (${blocks} × 5,000 UNI$ block${blocks === 1 ? '' : 's'})` };
+  const unis = appData.cards.uob.points || 0;
+  if (unis >= 5000) {
+    const blocks = Math.floor(unis / 5000);
+    return { cls: 'nudge-info', cardId: 'uob', text: `UOB pool can transfer ${formatNum(blocks * 10000)} KrisFlyer miles (${blocks} × 5,000 UNI$ block${blocks === 1 ? '' : 's'})` };
   }
 
   return null;
@@ -1432,8 +1498,7 @@ function togglePayment(cardId) {
 let _expiryTarget = null;
 function openExpiryModal(cardId) {
   _expiryTarget = cardId;
-  const names = { citi_rewards:'Citi Rewards', hsbc_revolution:'HSBC Revolution', uob_preferred:'UOB Preferred Platinum', uob_ladys:"UOB Lady's" };
-  document.getElementById('expiry-modal-title').textContent = `${names[cardId]} — Points Expiry`;
+  document.getElementById('expiry-modal-title').textContent = `${CARD_META[cardId].short} — points expiry`;
   const c = appData.cards[cardId];
   document.getElementById('expiry-date-input').value = c.expiry || '';
   openModal('expiry-modal');
@@ -1451,8 +1516,7 @@ function saveExpiry() {
 let _stmtTarget = null;
 function openStmtDayModal(cardId) {
   _stmtTarget = cardId;
-  const names = { citi_rewards:'Citi Rewards', hsbc_revolution:'HSBC Revolution', uob_preferred:'UOB Preferred Platinum', uob_ladys:"UOB Lady's" };
-  document.getElementById('stmtday-modal-sub').textContent = `${names[cardId]} — both dates are printed on your statement.`;
+  document.getElementById('stmtday-modal-sub').textContent = `${CARD_META[cardId].short} — both dates are printed on your statement.`;
   document.getElementById('stmtday-input').value = appData.cards[cardId].statement_day || '';
   document.getElementById('dueday-input').value  = appData.cards[cardId].due_day || '';
   openModal('stmtday-modal');
@@ -1678,18 +1742,11 @@ const OB_STEPS = [
     pts_hint:  'Check your HSBC app or upload PDF later'
   },
   {
-    cardId: 'uob_preferred',
-    name:   'UOB Preferred Platinum',
-    desc:   'Earns UNI$ that pool with your Lady\'s Card. Both cards share one combined statement. 1 UNI$ = 2 KrisFlyer miles.',
+    cardId: 'uob',
+    name:   "UOB Preferred Platinum + Lady's",
+    desc:   'Both cards earn UNI$ into one pool and share one combined statement. 1 UNI$ = 2 KrisFlyer miles.',
     pts_label: 'Combined UNI$ pool (optional)',
-    pts_hint:  'The total UNI$ for both UOB cards. Check your UOB app or upload the combined PDF later'
-  },
-  {
-    cardId: 'uob_ladys',
-    name:   "UOB Lady's Card",
-    desc:   'Earns UNI$ that pool with your Preferred Platinum. You already entered the combined pool in the previous step.',
-    pts_label: null,
-    pts_hint:  null
+    pts_hint:  'The total UNI$ for both cards. Check your UOB app or upload the combined PDF later'
   }
 ];
 
@@ -1831,30 +1888,11 @@ function getPointsHistory(cardId) {
   return months;
 }
 
-// Chart series: the two UOB cards share one UNI$ pool, so they're charted as one line
-const SERIES = [
-  { id: 'citi_rewards',    name: 'Citi Rewards' },
-  { id: 'hsbc_revolution', name: 'HSBC Revolution' },
-  { id: 'uob_pool',        name: 'UOB UNI$ pool' },
-];
-function getSeriesHistory(seriesId) {
-  if (seriesId !== 'uob_pool') return getPointsHistory(seriesId);
-  const pref = getPointsHistory('uob_preferred'), lady = getPointsHistory('uob_ladys');
-  const byKey = {};
-  [...pref, ...lady].forEach(p => {
-    byKey[p.key] = byKey[p.key] || { key: p.key, label: p.label, points: 0 };
-    byKey[p.key].points += p.points;
-  });
-  return Object.values(byKey).sort((a, b) => a.key.localeCompare(b.key));
-}
-
 function updatePoints(cardId, points) {
   const c = appData.cards[cardId];
   c.points_prev  = c.points;
   c.points       = points;
   c.last_updated = todayStr();
-  if (!appData.uploads_this_month) appData.uploads_this_month = {};
-  appData.uploads_this_month[cardId] = monthKey();
   // Save to history
   if (!appData.history) appData.history = {};
   if (!appData.history[cardId]) appData.history[cardId] = {};
@@ -1867,53 +1905,141 @@ async function handleFile(event, cardId) {
   const file = event.target.files[0];
   if (!file) return;
   event.target.value = '';
+  const meta = CARD_META[cardId];
   setUploadLoading(cardId, true);
+  let pts = null, error = null;
   try {
-    if (typeof pdfjsLib === 'undefined') throw new Error('PDF library not loaded.');
+    if (typeof pdfjsLib === 'undefined') throw new Error('PDF reader didn\'t load — check your connection');
     const text = await extractPDFText(file);
-    if (PDF_GROUPS[cardId].length === 2 && cardId.startsWith('uob')) {
-      const prefConfig = PARSER_CONFIG['uob_preferred'];
-      const poolPts = findPointsInText(text, prefConfig);
-      if (poolPts !== null) {
-        updatePoints('uob_preferred', poolPts);
-        updatePoints('uob_ladys', 0);
-        flashCard('uob_preferred', true); flashCard('uob_ladys', true);
-        showParseResult('uob_preferred', `Pool total: ${formatNum(poolPts)} UNI$ = ${formatNum(CONVERSION.uob_pool(poolPts))} KrisFlyer miles`, true);
-        showToast(`UOB: ${formatNum(poolPts)} UNI$ parsed`);
-      } else {
-        flashCard('uob_preferred', false);
-        showParseResult('uob_preferred', 'Could not read UNI$ — enter manually', false);
-        showToast('Could not parse — enter manually');
-      }
-    } else {
-      const config = PARSER_CONFIG[cardId];
-      const pts = findPointsInText(text, config);
-      if (pts !== null) {
-        updatePoints(cardId, pts);
-        flashCard(cardId, true);
-        showParseResult(cardId, `Found ${formatNum(pts)} ${config.label}`, true);
-        showToast('Statement parsed');
-      } else {
-        flashCard(cardId, false);
-        showParseResult(cardId, `Could not read ${config.label} — enter manually`, false);
-        showToast('Could not parse — enter manually');
-      }
-    }
-  } catch(err) {
-    flashCard(cardId, false);
-    showParseResult(cardId, `Error: ${err.message}`, false);
-    showToast('Parse failed');
+    pts = findPointsInText(text, PARSER_CONFIG[cardId]);
+  } catch (err) {
+    error = err;
   }
   setUploadLoading(cardId, false);
+
+  if (pts !== null) {
+    updatePoints(cardId, pts);
+    flashCard(cardId, true);
+    showParseResult(cardId, `Found ${formatNum(pts)} ${meta.ptsLabel} = ${formatNum(calcMiles(cardId))} miles`, true);
+    showToast(`${meta.short} updated · ${formatNum(calcMiles(cardId))} miles`);
+  } else {
+    // Fall straight through to manual entry instead of a dead end
+    openPointsSheet(cardId, error
+      ? `Couldn't read that PDF (${error.message}). Enter the balance instead.`
+      : `Couldn't find the ${meta.ptsLabel} balance in that PDF. Enter it instead.`);
+  }
 }
 
+// Front-of-card and checklist "Update" action
+function quickUpdate(cardId) {
+  if (cardId === 'hsbc_revolution') openPointsSheet(cardId);
+  else triggerUpload(cardId);
+}
 
+// ═══ Manual balance entry sheet ═══
+let _pointsTarget = null;
+function openPointsSheet(cardId, message) {
+  _pointsTarget = cardId;
+  const meta = CARD_META[cardId], c = appData.cards[cardId];
+  document.getElementById('points-modal-title').textContent = `${meta.short} balance`;
+  document.getElementById('points-modal-sub').textContent = message || meta.manualHint;
+  document.getElementById('points-modal-sub').classList.toggle('is-error', !!message);
+  document.getElementById('points-modal-label').textContent = meta.ptsLabel;
+  const input = document.getElementById('points-input');
+  input.value = '';
+  input.placeholder = c.points !== null ? `Currently ${formatNum(c.points)}` : 'e.g. 25,000';
+  updatePointsPreview();
+  openModal('points-modal');
+  setTimeout(() => input.focus(), 60);
+}
+function readPointsInput() {
+  const digits = document.getElementById('points-input').value.replace(/[^\d]/g, '');
+  return digits === '' ? null : parseInt(digits, 10);
+}
+function updatePointsPreview() {
+  const el = document.getElementById('points-preview');
+  const v = readPointsInput();
+  el.textContent = (v === null || !_pointsTarget) ? '' : `= ${formatNum(CONVERSION[_pointsTarget](v))} KrisFlyer miles`;
+}
+function savePointsSheet() {
+  const v = readPointsInput();
+  if (v === null) { showToast('Enter a balance'); return; }
+  const id = _pointsTarget;
+  updatePoints(id, v);
+  closeModal('points-modal');
+  flashCard(id, true);
+  showToast(`${CARD_META[id].short} updated · ${formatNum(calcMiles(id))} miles`);
+}
+document.getElementById('points-input').addEventListener('input', updatePointsPreview);
+document.getElementById('points-input').addEventListener('keydown', e => { if (e.key === 'Enter') savePointsSheet(); });
 
-function openModal(id){document.getElementById(id).classList.add('open')}
+// ═══ "This month" checklist sheet ═══
+function openMonthSheet() {
+  renderMonthSheet();
+  openModal('month-modal');
+}
+function renderMonthSheet() {
+  const list = document.getElementById('month-list');
+  if (!list) return;
+  const tasks = getMonthTasks();
+  const done = tasks.filter(t => t.done).length;
+  const monthName = today().toLocaleDateString('en-SG', { month: 'long' });
+  document.getElementById('month-sub').textContent = done === tasks.length
+    ? `All done for ${monthName}.`
+    : `${done} of ${tasks.length} done for ${monthName}.`;
+  document.getElementById('month-progress-fill').style.width = `${Math.round(done / tasks.length * 100)}%`;
 
-function closeModal(id){document.getElementById(id).classList.remove('open')}
+  const check = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#050C14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  list.innerHTML = cardIds.map(id => {
+    const meta = CARD_META[id], c = appData.cards[id];
+    const bal = getBalanceState(id), ps = getPaymentState(id);
+    const miles = calcMiles(id);
+    const isManual = id === 'hsbc_revolution';
+
+    const balBtn = bal.current
+      ? `<button class="task-btn ghost" data-upload-for="${id}" onclick="quickUpdate('${id}')">Update</button>`
+      : `<button class="task-btn" data-upload-for="${id}" onclick="quickUpdate('${id}')">${isManual ? 'Enter points' : 'Upload PDF'}</button>`;
+    const balMeta = bal.meta + (isManual ? '' : ` · <button class="task-link" onclick="openPointsSheet('${id}')">type it in</button>`);
+
+    let payBtn, payMeta, payCls = '';
+    if (ps.state === 'no-config') {
+      payBtn = `<button class="task-btn ghost" onclick="openStmtDayModal('${id}')">Set dates</button>`;
+      payMeta = 'Add billing dates to track this';
+    } else if (ps.state === 'paid') {
+      payBtn = `<button class="task-btn ghost" onclick="togglePayment('${id}')">Undo</button>`;
+      payMeta = ps.short;
+    } else {
+      payBtn = `<button class="task-btn" onclick="togglePayment('${id}')">Mark paid</button>`;
+      payMeta = ps.short;
+      payCls = ps.state === 'overdue' ? 'alert' : ps.state === 'due-soon' ? 'warn' : '';
+    }
+
+    return `<div class="task-group">
+      <div class="task-group-head">
+        <span class="task-group-name"><span class="task-dot" style="background:${getGraphColor(id)}"></span>${meta.short}</span>
+        <small>${miles !== null ? formatNum(miles) + ' miles' : 'No balance yet'}</small>
+      </div>
+      <div class="task-row ${bal.current ? 'done' : ''}">
+        <span class="task-check">${bal.current ? check : ''}</span>
+        <div class="task-body"><div class="task-title">Update balance</div><div class="task-meta">${balMeta}</div></div>
+        ${balBtn}
+      </div>
+      <div class="task-row ${ps.state === 'paid' ? 'done' : ''}">
+        <span class="task-check">${ps.state === 'paid' ? check : ''}</span>
+        <div class="task-body"><div class="task-title">Pay bill</div><div class="task-meta ${payCls}">${payMeta}</div></div>
+        ${payBtn}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+let _modalZ = 200;
+function syncModalState(){document.body.classList.toggle('modal-open',!!document.querySelector('.modal-overlay.open'))}
+function openModal(id){const el=document.getElementById(id);el.style.zIndex=++_modalZ;el.classList.add('open');syncModalState()}
+
+function closeModal(id){document.getElementById(id).classList.remove('open');syncModalState()}
 document.querySelectorAll('.modal-overlay').forEach(el=>{
-  el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')});
+  el.addEventListener('click',e=>{if(e.target===el){el.classList.remove('open');syncModalState()}});
 });
 
 function animateHero(target) {
@@ -1984,6 +2110,10 @@ function flipCard(cardId) {
   }
 }
 
+document.querySelectorAll('.flip-front').forEach(el => el.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target === el) { e.preventDefault(); el.click(); }
+}));
+
 // Programmatic open (used by the nudge bar) — bypasses the swipe guard
 function openCardBack(cardId) {
   const card = document.getElementById('fc-' + cardId);
@@ -2010,10 +2140,12 @@ document.getElementById('nudge-bar').addEventListener('keydown', e => {
 // CARD META + BACK RENDERING
 // ═══════════════════════════════════════════════════════════
 const CARD_META = {
-  citi_rewards:    { name:'Citi Rewards',           ptsLabel:'ThankYou Points',  rate:'10,000 pts → 4,000 miles',      rateBadge:'×0.4',   dotColor:'rgba(160,60,60,0.70)',  isUOB:false, isHSBC:false },
-  hsbc_revolution: { name:'HSBC Revolution',        ptsLabel:'Reward Points',    rate:'30,000 pts → 10,000 miles',     rateBadge:'×0.333', dotColor:'rgba(100,60,140,0.70)', isUOB:false, isHSBC:true  },
-  uob_preferred:   { name:'UOB Preferred Platinum', ptsLabel:'UNI$ Pool',        rate:'1 UNI$ → 2 KrisFlyer miles',    rateBadge:'×2',     dotColor:'rgba(50,80,140,0.70)',  isUOB:true,  isHSBC:false },
-  uob_ladys:       { name:"UOB Lady's Card",        ptsLabel:'UNI$ Pool',        rate:'Pooled with Preferred Platinum', rateBadge:'×2',     dotColor:'rgba(50,80,140,0.70)',  isUOB:true,  isHSBC:false },
+  citi_rewards:    { name:'Citi Rewards',                   short:'Citi Rewards',    ptsLabel:'ThankYou Points', rate:'10,000 pts → 4,000 miles',   uploadLabel:'Upload statement',
+                     manualHint:'Copy the ThankYou Points balance from the Citi app or your statement.' },
+  hsbc_revolution: { name:'HSBC Revolution',                short:'HSBC Revolution', ptsLabel:'Reward Points',   rate:'30,000 pts → 10,000 miles',  uploadLabel:null,
+                     manualHint:'Copy the Reward Points balance from the HSBC app.' },
+  uob:             { name:"UOB Preferred Platinum + Lady's", short:'UOB',             ptsLabel:'UNI$',            rate:'1 UNI$ → 2 KrisFlyer miles', uploadLabel:'Upload combined UOB statement',
+                     manualHint:'Copy the combined UNI$ balance from the UOB app or your statement.' },
 };
 
 function renderCardBack(cardId) {
@@ -2023,7 +2155,7 @@ function renderCardBack(cardId) {
   const meta = CARD_META[cardId];
   const ps   = getPaymentState(cardId);
   const exp  = getExpiryState(cardId);
-  const miles = cardId.startsWith('uob') ? calcUOBPool().miles : calcMiles(cardId);
+  const miles = calcMiles(cardId);
   const delta = (c.points !== null && c.points_prev !== null) ? c.points - c.points_prev : null;
   const stmtText = !c.statement_day ? 'Not set'
     : `Statement ${c.statement_day}${ordinal(c.statement_day)}` + (c.due_day ? ` · due ${c.due_day}${ordinal(c.due_day)}` : ' · due day not set');
@@ -2031,19 +2163,13 @@ function renderCardBack(cardId) {
     ? `<span style="color:var(--accent);font-size:11px;font-weight:600;margin-top:1px">+${formatNum(delta)} this month</span>`
     : delta < 0 ? `<span style="color:var(--red);font-size:11px;font-weight:600;margin-top:1px">${formatNum(delta)} this month</span>` : '';
 
+  const uploadIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>';
+  const editIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
   let uploadHTML = '';
-  if (meta.isHSBC) {
-    uploadHTML = `<button class="back-upload-btn hsbc-manual" onclick="event.stopPropagation();toggleBackManual('${cardId}')">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      Enter Points Balance</button>`;
-  } else if (meta.isUOB && cardId === 'uob_ladys') {
-    uploadHTML = `<div class="uob-pool-note">UNI$ pool shared — upload via Preferred Platinum</div>`;
-  } else {
-    const lbl = meta.isUOB ? 'Upload Combined UOB PDF' : 'Upload Statement';
-    uploadHTML = `<button class="back-upload-btn" id="back-upload-btn-${cardId}" onclick="event.stopPropagation();triggerUpload('${cardId}')">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-      ${lbl}</button>`;
+  if (meta.uploadLabel) {
+    uploadHTML += `<button class="back-upload-btn" data-upload-for="${cardId}" onclick="event.stopPropagation();triggerUpload('${cardId}')">${uploadIcon} ${meta.uploadLabel}</button>`;
   }
+  uploadHTML += `<button class="back-upload-btn ${meta.uploadLabel ? 'secondary' : ''}" onclick="event.stopPropagation();openPointsSheet('${cardId}')">${editIcon} Enter balance</button>`;
 
   body.innerHTML = `
     <div class="back-row" style="cursor:default">
@@ -2082,11 +2208,6 @@ function renderCardBack(cardId) {
       </button>
     </div>
     ${uploadHTML}
-    <div class="back-manual-row ${meta.isHSBC && c.points===null?'visible':''}" id="back-manual-${cardId}">
-      <input type="number" class="back-manual-input" id="back-manual-input-${cardId}"
-        placeholder="${meta.isHSBC?'e.g. 25409':meta.isUOB?'e.g. 30391':'e.g. 24000'}" min="0">
-      <button class="back-manual-save" onclick="event.stopPropagation();saveBackManual('${cardId}')">Save</button>
-    </div>
     <div class="back-parse-result" id="back-parse-${cardId}"></div>`;
 }
 
@@ -2094,22 +2215,6 @@ function ordinal(n) {
   const s = ['th','st','nd','rd'], v = n%100;
   return s[(v-20)%10] || s[v] || s[0];
 }
-function toggleBackManual(id) {
-  const r = document.getElementById('back-manual-' + id);
-  if (r) { r.classList.toggle('visible'); document.getElementById('back-manual-input-'+id)?.focus(); }
-}
-function saveBackManual(id) {
-  const val = parseInt(document.getElementById('back-manual-input-'+id).value);
-  if (isNaN(val)||val<0){showToast('Enter a valid number');return;}
-  updatePoints(id, val);
-  document.getElementById('back-manual-'+id).classList.remove('visible');
-  document.getElementById('back-manual-input-'+id).value='';
-  flashCard(id, true);
-  renderCardBack(id);
-  renderAll();
-  showToast(CARD_META[id].name+' updated');
-}
-
 // ═══════════════════════════════════════════════════════════
 // RENDER ALL
 // ═══════════════════════════════════════════════════════════
@@ -2124,15 +2229,11 @@ function renderAll() {
     document.getElementById('hero-sub').textContent = 'Upload your statements to get started';
   }
 
-  const mk = monthKey(), uploads = appData.uploads_this_month || {};
-  let count = 0;
-  if (uploads['citi_rewards'] === mk) count++;
-  if (uploads['hsbc_revolution'] === mk) count++;
-  // UOB Preferred and Lady's share one combined PDF — count as 1
-  if (uploads['uob_preferred'] === mk || uploads['uob_ladys'] === mk) count++;
+  const tasks = getMonthTasks();
+  const doneCount = tasks.filter(t => t.done).length;
   const badge = document.getElementById('completion-badge');
-  badge.textContent = `${count} / 3 updated`;
-  badge.className = count === 3 ? 'top-badge' : 'top-badge incomplete';
+  badge.textContent = doneCount === tasks.length ? 'This month ✓' : `This month · ${doneCount}/${tasks.length}`;
+  badge.className = doneCount === tasks.length ? 'top-badge' : 'top-badge incomplete';
 
   const nudge = computeNudge();
   const nudgeEl = document.getElementById('nudge-bar');
@@ -2148,18 +2249,13 @@ function renderAll() {
     nudgeEl.style.display = 'none';
   }
 
-  // Non-UOB cards
-  ['citi_rewards','hsbc_revolution'].forEach(id => {
-    const c = appData.cards[id];
-    document.getElementById('card-pts-'+id).textContent   = c.points!==null ? formatNum(c.points) : '—';
-    document.getElementById('card-miles-'+id).textContent = calcMiles(id)!==null ? formatNum(calcMiles(id)) : '—';
+  cardIds.forEach(id => {
+    const c = appData.cards[id], miles = calcMiles(id);
+    document.getElementById('card-pts-'+id).textContent   = c.points !== null ? formatNum(c.points) : '—';
+    document.getElementById('card-miles-'+id).textContent = miles !== null ? formatNum(miles) : '—';
+    updateFrontButton(id);
   });
-  // UOB pool
-  const pool = calcUOBPool();
-  ['uob_preferred','uob_ladys'].forEach(id => {
-    document.getElementById('card-pts-'+id).textContent   = pool.unis  > 0 ? formatNum(pool.unis)  : '—';
-    document.getElementById('card-miles-'+id).textContent = pool.miles > 0 ? formatNum(pool.miles) : '—';
-  });
+  if (document.getElementById('month-modal').classList.contains('open')) renderMonthSheet();
   // Re-render open backs
   _flippedCards.forEach(id => renderCardBack(id));
 }
@@ -2173,20 +2269,36 @@ function showParseResult(cardId, msg, success) {
   if (!el) return;
   el.textContent = msg;
   el.className = 'back-parse-result '+(success?'success':'error');
-  if (!success) document.getElementById('back-manual-input-'+cardId)?.classList.add('highlight');
   setTimeout(()=>{el.className='back-parse-result';},6000);
 }
+// Every button that uploads for this card (front, back, checklist) shows the same busy state
 function setUploadLoading(cardId, loading) {
-  const btn = document.getElementById('back-upload-btn-'+cardId);
-  if (!btn) return;
-  if (loading) {
-    btn.dataset.idleHtml = btn.innerHTML;
-    btn.classList.add('loading');
-    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Parsing...';
-  } else {
-    btn.classList.remove('loading');
-    if (btn.dataset.idleHtml) btn.innerHTML = btn.dataset.idleHtml;
-  }
+  const spinner = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>';
+  document.querySelectorAll(`[data-upload-for="${cardId}"]`).forEach(btn => {
+    if (loading) {
+      btn.dataset.idleHtml = btn.innerHTML;
+      btn.classList.add('loading');
+      btn.innerHTML = `${spinner} Reading…`;
+    } else {
+      btn.classList.remove('loading');
+      if (btn.dataset.idleHtml) { btn.innerHTML = btn.dataset.idleHtml; delete btn.dataset.idleHtml; }
+    }
+  });
+}
+
+// Front-of-card button: prominent "Update" when a new statement is out, quiet "Updated" otherwise
+function updateFrontButton(cardId) {
+  const btn = document.getElementById('front-update-' + cardId);
+  if (!btn || btn.classList.contains('loading')) return;
+  const current = getBalanceState(cardId).current;
+  const icon = current
+    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+    : cardId === 'hsbc_revolution'
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>'
+      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
+  btn.classList.toggle('is-current', current);
+  btn.innerHTML = `${icon}<span>${current ? 'Updated' : 'Update'}</span>`;
+  btn.setAttribute('aria-label', `${current ? 'Update again' : 'Update'} ${CARD_META[cardId].short} balance`);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2195,24 +2307,15 @@ function setUploadLoading(cardId, loading) {
 function renderHistoryRows() {
   const container = document.getElementById('history-card-list');
   if (!container) return;
-  const pool = calcUOBPool();
-  const uobP = appData.cards.uob_preferred, uobL = appData.cards.uob_ladys;
-  const uobUpdated = [uobP.last_updated, uobL.last_updated].filter(Boolean).sort().pop() || null;
-  const hasUob = uobP.points !== null || uobL.points !== null;
-  const rows = [
-    { name: 'Citi Rewards',    color: getGraphColor('citi_rewards'),    pts: appData.cards.citi_rewards.points,    unit: 'ThankYou Points', miles: calcMiles('citi_rewards'),    updated: appData.cards.citi_rewards.last_updated },
-    { name: 'HSBC Revolution', color: getGraphColor('hsbc_revolution'), pts: appData.cards.hsbc_revolution.points, unit: 'Reward Points',   miles: calcMiles('hsbc_revolution'), updated: appData.cards.hsbc_revolution.last_updated },
-    { name: 'UOB UNI$ pool',   color: getGraphColor('uob_pool'),        pts: hasUob ? pool.unis : null,            unit: "UNI$ · Preferred + Lady's", miles: hasUob ? pool.miles : null, updated: uobUpdated },
-  ];
-  container.innerHTML = rows.map(r => {
-    const pts = r.pts, miles = r.miles;
-    const updated = r.updated ? `Updated ${formatDate(r.updated)}` : 'Not yet updated';
+  container.innerHTML = cardIds.map(id => {
+    const c = appData.cards[id], meta = CARD_META[id], miles = calcMiles(id);
+    const updated = c.last_updated ? `Updated ${formatDate(c.last_updated)}` : 'Not yet updated';
     return `<div class="history-card-row">
       <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:8px;height:8px;border-radius:50%;background:${r.color};flex-shrink:0"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:${getGraphColor(id)};flex-shrink:0"></div>
         <div>
-          <div class="history-card-name">${r.name}</div>
-          <div class="history-card-pts">${pts!==null?formatNum(pts)+' '+r.unit:'No data'}</div>
+          <div class="history-card-name">${meta.name}</div>
+          <div class="history-card-pts">${c.points!==null?formatNum(c.points)+' '+meta.ptsLabel:'No data'}</div>
         </div>
       </div>
       <div style="text-align:right">
@@ -2226,7 +2329,7 @@ function renderHistoryRows() {
 function getGraphColor(id) {
   if (id==='citi_rewards')    return '#E5484D';
   if (id==='hsbc_revolution') return '#DB2777';
-  return '#3B82F6'; // UOB pool
+  return '#3B82F6'; // UOB
 }
 
 function drawGraph() {
@@ -2239,7 +2342,7 @@ function drawGraph() {
   canvas.style.width=W+'px'; canvas.style.height=H+'px';
   ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H);
 
-  const allSeries = SERIES.map(sr=>({id:sr.id,name:sr.name,history:getSeriesHistory(sr.id),color:getGraphColor(sr.id)}));
+  const allSeries = cardIds.map(id=>({id,name:CARD_META[id].short,history:getPointsHistory(id),color:getGraphColor(id)}));
   let allDates = [...new Set(allSeries.flatMap(s=>s.history.map(p=>p.key)))].sort();
 
   if (!allDates.length) {
@@ -2250,11 +2353,7 @@ function drawGraph() {
   const aligned = allSeries.map(s=>{
     const map={}; 
     s.history.forEach(p=>{
-      // Convert raw points to miles for consistent Y axis
-      let miles;
-      if (s.id === 'citi_rewards')    miles = CONVERSION.citi_rewards(p.points);
-      else if (s.id === 'hsbc_revolution') miles = CONVERSION.hsbc_revolution(p.points);
-      else miles = CONVERSION.uob_pool(p.points); // UOB pool UNI$
+      const miles = CONVERSION[s.id](p.points);
       map[p.key] = miles;
     });
     return{...s,values:allDates.map(d=>map[d]??null)};
@@ -2271,10 +2370,14 @@ function drawGraph() {
     if(t>0){ctx.fillStyle='rgba(238,242,248,0.28)';ctx.font='500 10px Urbanist,system-ui';ctx.textAlign='right';ctx.fillText(formatNum(Math.round(maxVal*t)),pad.left-5,y+4);}
   });
   ctx.fillStyle='rgba(238,242,248,0.28)';ctx.font='500 10px Urbanist,system-ui';ctx.textAlign='center';
+  const multiYear = new Set(allDates.map(d=>d.slice(0,4))).size > 1;
   allDates.forEach((d,i)=>{
-    if(n<=6||i%Math.ceil(n/5)===0){
+    if(n<=6||i%Math.ceil(n/5)===0||i===n-1){
       const x=pad.left+(n===1?gW/2:(i/(n-1))*gW);
-      ctx.fillText(d.slice(0,7),x,H-6);
+      const dt=parseLocalDate(d+'-01');
+      const lbl=dt.toLocaleDateString('en-SG',{month:'short'})+(multiYear?` '${d.slice(2,4)}`:'');
+      ctx.textAlign = n>1&&i===n-1 ? 'right' : n>1&&i===0 ? 'left' : 'center';
+      ctx.fillText(lbl,x,H-6);
     }
   });
   aligned.forEach(s=>{
