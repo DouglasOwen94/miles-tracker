@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="Miles">
 <title>Miles Tracker</title>
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -137,6 +138,8 @@ body {
   -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;
   mask-size: contain; mask-repeat: no-repeat; mask-position: center;
 }
+#nudge-bar { cursor: pointer; }
+#nudge-bar:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 #nudge-bar.red   { background: rgba(240,96,96,0.08);  color: #F09090; border: 1px solid rgba(240,96,96,0.16); }
 #nudge-bar.amber { background: rgba(232,168,32,0.08); color: #E8BC60; border: 1px solid rgba(232,168,32,0.16); }
 #nudge-bar.info  { background: rgba(91,156,246,0.08); color: #8ABAFF; border: 1px solid rgba(91,156,246,0.16); }
@@ -443,6 +446,8 @@ body {
 .back-row.paid    { background: rgba(52,200,138,0.22); border-color: rgba(52,200,138,0.45); }
 .back-row.unpaid  { background: rgba(240,96,96,0.15);  border-color: rgba(240,96,96,0.35); }
 .back-row.overdue { background: rgba(240,96,96,0.22);  border-color: rgba(240,96,96,0.55); animation: pulse-red 2s infinite; }
+.back-row.due-soon { background: rgba(232,168,32,0.18); border-color: rgba(232,168,32,0.40); }
+.back-row.due-soon .back-row-value { color: rgba(140,90,0,0.90); }
 .back-row.paid    .back-row-value { color: rgba(0,100,60,0.85); }
 .back-row.unpaid  .back-row-value,
 .back-row.overdue .back-row-value { color: rgba(160,40,40,0.90); }
@@ -753,11 +758,15 @@ input[type=file] { display: none; }
 <div class="modal-overlay" id="stmtday-modal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Statement Day</div>
-    <div class="modal-sub" id="stmtday-modal-sub">Which day of the month?</div>
+    <div class="modal-title">Billing dates</div>
+    <div class="modal-sub" id="stmtday-modal-sub">Both are printed on your statement.</div>
     <div class="modal-field">
-      <label class="modal-label">Day of Month (1–28)</label>
-      <input type="number" class="modal-input" id="stmtday-input" min="1" max="28" placeholder="e.g. 15">
+      <label class="modal-label" for="stmtday-input">Statement day (1–28)</label>
+      <input type="number" inputmode="numeric" class="modal-input" id="stmtday-input" min="1" max="28" placeholder="e.g. 15">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label" for="dueday-input">Payment due day (1–31)</label>
+      <input type="number" inputmode="numeric" class="modal-input" id="dueday-input" min="1" max="31" placeholder="e.g. 8">
     </div>
     <div class="modal-actions">
       <button class="modal-btn-secondary" onclick="closeModal('stmtday-modal')">Cancel</button>
@@ -777,7 +786,7 @@ input[type=file] { display: none; }
       </div>
       <span class="top-wordmark-text">Miles</span>
     </div>
-    <span class="top-badge incomplete" id="completion-badge">0 / 3 PDFs</span>
+    <span class="top-badge incomplete" id="completion-badge" title="Balances updated this month">0 / 3 updated</span>
   </div>
 
   <!-- HERO -->
@@ -788,7 +797,7 @@ input[type=file] { display: none; }
   </div>
 
   <!-- NUDGE -->
-  <div id="nudge-bar"></div>
+  <div id="nudge-bar" role="button" tabindex="0"></div>
 
   <!-- CARD AREA -->
   <div id="card-area">
@@ -915,7 +924,7 @@ input[type=file] { display: none; }
                     <span class="card-stat-value miles" id="card-miles-uob_preferred">—</span>
                   </div>
                 </div>
-                <div class="card-rate-pill">× 0.4</div>
+                <div class="card-rate-pill">× 2</div>
               </div>
             </div>
             <div class="flip-back" id="back-uob_preferred">
@@ -961,7 +970,7 @@ input[type=file] { display: none; }
                     <span class="card-stat-value miles" id="card-miles-uob_ladys">—</span>
                   </div>
                 </div>
-                <div class="card-rate-pill">× 0.4</div>
+                <div class="card-rate-pill">× 2</div>
               </div>
             </div>
             <div class="flip-back" id="back-uob_ladys">
@@ -993,9 +1002,9 @@ input[type=file] { display: none; }
 
   <!-- HISTORY TAB — in-flow, tab bar stays visible -->
   <div class="tab-page" id="tab-history">
-    <div class="history-sub" style="margin-bottom:16px">KrisFlyer miles earned over time</div>
+    <div class="history-sub" style="margin-bottom:16px">Miles value of your balances, month by month. Drops usually mean you transferred points.</div>
     <div class="graph-card">
-      <div class="graph-card-title">All Cards — KrisFlyer Miles</div>
+      <div class="graph-card-title">KrisFlyer miles value by card</div>
       <canvas id="graph-canvas"></canvas>
       <div class="graph-legend" id="graph-legend"></div>
     </div>
@@ -1097,7 +1106,7 @@ const PARSER_CONFIG = {
 const CONVERSION = {
   citi_rewards:    pts => Math.floor(pts / 10000 * 4000),   // 10k pts = 4k miles
   hsbc_revolution: pts => Math.floor(pts / 30000 * 10000),  // 30k pts = 10k miles
-  uob_pool:        unis => Math.floor(unis * 0.4)            // pooled UNI$ × 0.4
+  uob_pool:        unis => Math.floor(unis * 2)              // 1 UNI$ = 2 KrisFlyer miles (5,000 UNI$ = 10,000 miles)
 };
 
 // Cards that share one PDF
@@ -1120,7 +1129,8 @@ function defaultCard() {
   return {
     points: null, points_prev: null,
     expiry: null, statement_day: null,
-    payment_status: 'unknown', payment_cycle: null,
+    due_day: null,     // day of month the payment is due (1–31)
+    paid_for: null,    // 'YYYY-MM-DD' of the statement that has been paid
     last_updated: null
   };
 }
@@ -1146,12 +1156,33 @@ function getInitialData() {
       uob_ladys:       defaultCard()
     },
     onboarding_complete: false,
-    app_version: '2.0',
+    app_version: '2.1',
     uploads_this_month: {}
   };
 }
 
 let appData = loadData() || getInitialData();
+migrateData(appData);
+
+// Bring older saved data up to the current shape. Safe to run repeatedly.
+function migrateData(data) {
+  if (!data || !data.cards) return;
+  Object.keys(data.cards).forEach(id => {
+    const c = data.cards[id];
+    if (c.due_day === undefined) c.due_day = null;
+    if (c.paid_for === undefined) {
+      c.paid_for = null;
+      // v2.0 stored a "paid this calendar month" flag — carry it over to the latest statement
+      if (c.payment_status === 'paid' && c.payment_cycle === monthKey() && c.statement_day) {
+        c.paid_for = toISO(latestStatementDate(c.statement_day));
+      }
+    }
+    delete c.payment_status;
+    delete c.payment_cycle;
+  });
+  data.app_version = '2.1';
+  saveData(data);
+}
 
 // ═══════════════════════════════════════════════════════════
 // MILES CALC
@@ -1195,17 +1226,31 @@ function monthKey() {
   const d = today();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
 }
+function parseLocalDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d || 1);
+}
+function startOfToday() {
+  const d = today(); d.setHours(0, 0, 0, 0); return d;
+}
+function toISO(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function dayDiff(a, b) {           // whole days from a to b
+  return Math.round((b - a) / 86400000);
+}
 function daysUntil(dateStr) {
-  const diff = new Date(dateStr) - today();
-  return Math.ceil(diff / 86400000);
+  return dayDiff(startOfToday(), parseLocalDate(dateStr));
 }
 function daysSince(dateStr) {
-  return Math.floor((today() - new Date(dateStr)) / 86400000);
+  return dayDiff(parseLocalDate(dateStr), startOfToday());
 }
 function formatDate(dateStr) {
   if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('en-SG', { month: 'short', year: 'numeric' });
+  return parseLocalDate(dateStr).toLocaleDateString('en-SG', { month: 'short', year: 'numeric' });
+}
+function formatDayMonth(d) {
+  return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
 }
 function formatNum(n) {
   if (n === null || n === undefined) return '—';
@@ -1215,35 +1260,59 @@ function formatNum(n) {
 // ═══════════════════════════════════════════════════════════
 // PAYMENT STATUS LOGIC
 // ═══════════════════════════════════════════════════════════
+// Days after the statement date to assume when no due day is set.
+// Used only for a gentle "likely due" hint — never to flag a card as overdue.
+const ESTIMATED_DUE_OFFSET = 21;
+
+function dateInMonth(y, m, day) {
+  const last = new Date(y, m + 1, 0).getDate();
+  return new Date(y, m, Math.min(day, last));
+}
+// Most recent statement date on or before today
+function latestStatementDate(stmtDay) {
+  const t = startOfToday();
+  let d = dateInMonth(t.getFullYear(), t.getMonth(), stmtDay);
+  if (d > t) d = dateInMonth(t.getFullYear(), t.getMonth() - 1, stmtDay);
+  return d;
+}
+function nextStatementDate(stmtDay) {
+  const last = latestStatementDate(stmtDay);
+  return dateInMonth(last.getFullYear(), last.getMonth() + 1, stmtDay);
+}
+// First occurrence of the due day after the statement date
+function dueDateFor(stmtDate, dueDay) {
+  if (!dueDay) {
+    const d = new Date(stmtDate); d.setDate(d.getDate() + ESTIMATED_DUE_OFFSET);
+    return { date: d, estimated: true };
+  }
+  let d = dateInMonth(stmtDate.getFullYear(), stmtDate.getMonth(), dueDay);
+  if (d <= stmtDate) d = dateInMonth(stmtDate.getFullYear(), stmtDate.getMonth() + 1, dueDay);
+  return { date: d, estimated: false };
+}
+
+// Pure function — reads state, never writes it.
 function getPaymentState(cardId) {
   const c = appData.cards[cardId];
-  if (!c.statement_day) return { state: 'no-config', label: 'Set statement day to track payment' };
+  if (!c.statement_day) return { state: 'no-config', label: 'Set statement day to track payments' };
 
-  const now = today();
-  const day = now.getDate();
-  const mk  = monthKey();
-  const stmtDay = c.statement_day;
-
-  // Auto-reset to unpaid on new statement cycle
-  if (c.payment_cycle !== mk && day >= stmtDay) {
-    c.payment_status = 'unpaid';
-    c.payment_cycle  = mk;
-    saveData(appData);
+  const stmt    = latestStatementDate(c.statement_day);
+  const stmtKey = toISO(stmt);
+  if (c.paid_for === stmtKey) {
+    return { state: 'paid', stmtKey, label: `Paid · next statement ${formatDayMonth(nextStatementDate(c.statement_day))}` };
   }
 
-  const isPaid = c.payment_status === 'paid' && c.payment_cycle === mk;
-  if (isPaid) return { state: 'paid', label: 'Paid this month — tap to undo' };
+  const due      = dueDateFor(stmt, c.due_day);
+  const daysLeft = dayDiff(startOfToday(), due.date);
+  const dueText  = formatDayMonth(due.date);
 
-  if (day < stmtDay) {
-    const daysLeft = stmtDay - day;
-    return { state: 'upcoming', label: `Next statement in ${daysLeft} days` };
+  if (due.estimated) {
+    if (daysLeft < 0) return { state: 'due-soon', stmtKey, daysLeft, label: 'Unpaid · set a due day for exact reminders' };
+    return { state: 'upcoming', stmtKey, daysLeft, label: `Likely due ~${dueText} · tap when paid` };
   }
-
-  const daysOver = day - stmtDay;
-  if (daysOver >= 7) {
-    return { state: 'overdue', label: `Overdue — ${daysOver} days past statement date` };
-  }
-  return { state: 'unpaid', label: 'Unpaid — tap to mark as paid' };
+  if (daysLeft < 0)   return { state: 'overdue',  stmtKey, daysLeft, label: `Overdue · was due ${dueText}` };
+  if (daysLeft === 0) return { state: 'due-soon', stmtKey, daysLeft, label: 'Due today · tap when paid' };
+  if (daysLeft <= 5)  return { state: 'due-soon', stmtKey, daysLeft, label: `Due in ${daysLeft}d (${dueText}) · tap when paid` };
+  return { state: 'upcoming', stmtKey, daysLeft, label: `Due ${dueText} · tap when paid` };
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1270,11 +1339,11 @@ function computeNudge() {
     uob_preferred: 'UOB Preferred Platinum', uob_ladys: "UOB Lady's"
   };
 
-  // P1: overdue payment 7+ days
+  // P1: payment past its due date
   for (const id of cards) {
     const ps = getPaymentState(id);
     if (ps.state === 'overdue') {
-      return { cls: 'nudge-red', text: `${cardNames[id]} payment is overdue — ${ps.label}` };
+      return { cls: 'nudge-red', cardId: id, text: `${cardNames[id]} payment is overdue — it was due ${formatDayMonth(dueDateFor(parseLocalDate(ps.stmtKey), appData.cards[id].due_day).date)}` };
     }
   }
   // P2: points expiring < 30 days
@@ -1283,17 +1352,20 @@ function computeNudge() {
     if (c.expiry) {
       const days = daysUntil(c.expiry);
       if (days >= 0 && days < 30) {
-        const miles = id.startsWith('uob') ? null : calcMiles(id);
+        const miles = id.startsWith('uob') ? calcUOBPool().miles : calcMiles(id);
         const extra = miles ? ` You have ${formatNum(miles)} KF miles to convert.` : '';
-        return { cls: 'nudge-red', text: `${cardNames[id]} points expire in ${days} days.${extra}` };
+        return { cls: 'nudge-red', cardId: id, text: `${cardNames[id]} points expire in ${days} days.${extra}` };
       }
     }
   }
-  // P3: unpaid past statement
+  // P3: payment due within 5 days (or past an estimated due date)
   for (const id of cards) {
     const ps = getPaymentState(id);
-    if (ps.state === 'unpaid') {
-      return { cls: 'nudge-amber', text: `${cardNames[id]} payment pending — tap to mark paid` };
+    if (ps.state === 'due-soon') {
+      const when = ps.daysLeft === 0 ? 'is due today'
+                 : ps.daysLeft > 0  ? `is due in ${ps.daysLeft} day${ps.daysLeft === 1 ? '' : 's'}`
+                 : 'may be due — set its due day';
+      return { cls: 'nudge-amber', cardId: id, text: `${cardNames[id]} payment ${when}` };
     }
   }
   // P4: expiry 30–90 days
@@ -1302,7 +1374,7 @@ function computeNudge() {
     if (c.expiry) {
       const days = daysUntil(c.expiry);
       if (days >= 30 && days < 90) {
-        return { cls: 'nudge-amber', text: `${cardNames[id]} points expire in ${days} days — plan your conversion` };
+        return { cls: 'nudge-amber', cardId: id, text: `${cardNames[id]} points expire in ${days} days — plan your conversion` };
       }
     }
   }
@@ -1312,14 +1384,15 @@ function computeNudge() {
     if (c.last_updated) {
       const age = daysSince(c.last_updated);
       if (age >= 35) {
-        return { cls: 'nudge-info', text: `${cardNames[id]} hasn't been updated in ${age} days` };
+        return { cls: 'nudge-info', cardId: id, text: `${cardNames[id]} hasn't been updated in ${age} days` };
       }
     }
   }
-  // P6: UOB pool >= 5000 UNI$
+  // P6: UOB pool has at least one full transfer block (5,000 UNI$ = 10,000 miles)
   const pool = calcUOBPool();
   if (pool.unis >= 5000) {
-    return { cls: 'nudge-info', text: `UOB pool has ${formatNum(pool.unis)} UNI$ — eligible for KrisFlyer transfer` };
+    const blocks = Math.floor(pool.unis / 5000);
+    return { cls: 'nudge-info', cardId: 'uob_preferred', text: `UOB pool can transfer ${formatNum(blocks * 10000)} KrisFlyer miles (${blocks} × 5,000 UNI$ block${blocks === 1 ? '' : 's'})` };
   }
 
   return null;
@@ -1328,40 +1401,12 @@ function computeNudge() {
 // ═══════════════════════════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════════════════════════
-// animateHero moved to new UI section
-
-
-// renderAll moved to new UI section
-
-
-// renderCard replaced
-
-
 // ═══════════════════════════════════════════════════════════
 // INTERACTIONS
 // ═══════════════════════════════════════════════════════════
 function triggerUpload(cardId) {
   document.getElementById(`file-${cardId}`).click();
 }
-
-function toggleManual(cardId) {
-  const el = document.getElementById(`manual-${cardId}`);
-  el.classList.toggle('visible');
-  if (el.classList.contains('visible')) {
-    document.getElementById(`manual-input-${cardId}`).focus();
-  }
-}
-
-function saveManual(cardId) {
-  const val = parseInt(document.getElementById(`manual-input-${cardId}`).value);
-  if (isNaN(val) || val < 0) { showToast('Enter a valid number'); return; }
-  updatePoints(cardId, val);
-  document.getElementById(`manual-${cardId}`).classList.remove('visible');
-  document.getElementById(`manual-input-${cardId}`).value = '';
-  flashCard(cardId, true);
-  showToast(`${PARSER_CONFIG[cardId].label} updated`);
-}
-
 
 function togglePayment(cardId) {
   const c = appData.cards[cardId];
@@ -1370,17 +1415,13 @@ function togglePayment(cardId) {
     return;
   }
   const ps = getPaymentState(cardId);
-  const mk = monthKey();
+  if (ps.state === 'no-config') return;
   if (ps.state === 'paid') {
-    c.payment_status = 'unpaid';
-    c.payment_cycle  = mk;
-  } else if (ps.state === 'unpaid' || ps.state === 'overdue' || ps.state === 'upcoming') {
-    c.payment_status = 'paid';
-    c.payment_cycle  = mk;
-    const el = document.getElementById(`back-payment-${cardId}`);
-    if (el) { el.style.animation = 'pulse-green 0.3s ease'; setTimeout(() => el.style.animation = '', 400); }
+    c.paid_for = null;
+    showToast('Marked as unpaid');
   } else {
-    return;
+    c.paid_for = ps.stmtKey;
+    showToast('Marked as paid');
   }
   saveData(appData);
   renderAll();
@@ -1411,31 +1452,24 @@ let _stmtTarget = null;
 function openStmtDayModal(cardId) {
   _stmtTarget = cardId;
   const names = { citi_rewards:'Citi Rewards', hsbc_revolution:'HSBC Revolution', uob_preferred:'UOB Preferred Platinum', uob_ladys:"UOB Lady's" };
-  document.getElementById('stmtday-modal-sub').textContent = `${names[cardId]} — which day of the month?`;
+  document.getElementById('stmtday-modal-sub').textContent = `${names[cardId]} — both dates are printed on your statement.`;
   document.getElementById('stmtday-input').value = appData.cards[cardId].statement_day || '';
+  document.getElementById('dueday-input').value  = appData.cards[cardId].due_day || '';
   openModal('stmtday-modal');
 }
 function saveStmtDay() {
   if (!_stmtTarget) return;
   const val = parseInt(document.getElementById('stmtday-input').value);
-  if (isNaN(val) || val < 1 || val > 28) { showToast('Enter a day between 1 and 28'); return; }
+  if (isNaN(val) || val < 1 || val > 28) { showToast('Statement day must be 1–28'); return; }
+  const dueRaw = document.getElementById('dueday-input').value.trim();
+  const due = dueRaw === '' ? null : parseInt(dueRaw);
+  if (due !== null && (isNaN(due) || due < 1 || due > 31)) { showToast('Due day must be 1–31'); return; }
   appData.cards[_stmtTarget].statement_day = val;
+  appData.cards[_stmtTarget].due_day = due;
   saveData(appData);
   renderAll();
   closeModal('stmtday-modal');
 }
-
-// modal funcs moved
-
-
-// flashCard moved
-
-
-// showParseResult moved
-
-
-// toggleFooter moved
-
 
 // Toast
 let toastTimer;
@@ -1586,9 +1620,6 @@ function findPointsInText(text, config) {
   return null;
 }
 
-// handleFile moved
-
-
 // ═══════════════════════════════════════════════════════════
 // EXPORT / IMPORT
 // ═══════════════════════════════════════════════════════════
@@ -1618,7 +1649,7 @@ function handleImport(event) {
       const data = JSON.parse(e.target.result);
       if (!data.cards) throw new Error('Invalid backup file');
       appData = data;
-      saveData(appData);
+      migrateData(appData);
       renderAll();
       showToast('Backup restored');
     } catch (err) {
@@ -1649,16 +1680,16 @@ const OB_STEPS = [
   {
     cardId: 'uob_preferred',
     name:   'UOB Preferred Platinum',
-    desc:   'Earns UNI$ that pool with your Lady\'s Card. Both cards share one combined PDF.',
-    pts_label: 'UNI$ balance (optional)',
-    pts_hint:  'Check your UOB app or upload the combined PDF later'
+    desc:   'Earns UNI$ that pool with your Lady\'s Card. Both cards share one combined statement. 1 UNI$ = 2 KrisFlyer miles.',
+    pts_label: 'Combined UNI$ pool (optional)',
+    pts_hint:  'The total UNI$ for both UOB cards. Check your UOB app or upload the combined PDF later'
   },
   {
     cardId: 'uob_ladys',
     name:   "UOB Lady's Card",
-    desc:   'Earns UNI$ that pool with your Preferred Platinum. Combined pool × 0.4 = KrisFlyer miles.',
-    pts_label: "UNI$ balance (optional)",
-    pts_hint:  'Check your UOB app or upload the combined PDF later'
+    desc:   'Earns UNI$ that pool with your Preferred Platinum. You already entered the combined pool in the previous step.',
+    pts_label: null,
+    pts_hint:  null
   }
 ];
 
@@ -1681,15 +1712,20 @@ function renderOnboarding() {
       <div class="ob-hint">When do your points expire? You can set this later.</div>
     </div>
     <div class="ob-field">
-      <label class="ob-label">Statement Day</label>
-      <input type="number" class="ob-input" id="ob-stmtday" min="1" max="28" placeholder="e.g. 15">
+      <label class="ob-label" for="ob-stmtday">Statement Day</label>
+      <input type="number" inputmode="numeric" class="ob-input" id="ob-stmtday" min="1" max="28" placeholder="e.g. 15">
       <div class="ob-hint">Which day of the month is your statement generated?</div>
     </div>
     <div class="ob-field">
-      <label class="ob-label">${s.pts_label}</label>
-      <input type="number" class="ob-input" id="ob-pts" placeholder="0" min="0">
-      <div class="ob-hint">${s.pts_hint}</div>
+      <label class="ob-label" for="ob-dueday">Payment Due Day</label>
+      <input type="number" inputmode="numeric" class="ob-input" id="ob-dueday" min="1" max="31" placeholder="e.g. 8">
+      <div class="ob-hint">Printed on your statement. Used for payment reminders.</div>
     </div>
+    ${s.pts_label ? `<div class="ob-field">
+      <label class="ob-label" for="ob-pts">${s.pts_label}</label>
+      <input type="number" inputmode="numeric" class="ob-input" id="ob-pts" placeholder="0" min="0">
+      <div class="ob-hint">${s.pts_hint}</div>
+    </div>` : ''}
     <button class="ob-btn" onclick="obNext()">${obStep < OB_STEPS.length - 1 ? 'Next' : 'Done'}</button>
   `;
 }
@@ -1699,10 +1735,13 @@ function obNext() {
   const c = appData.cards[s.cardId];
   const expiry  = document.getElementById('ob-expiry').value;
   const stmtDay = parseInt(document.getElementById('ob-stmtday').value);
-  const pts     = parseInt(document.getElementById('ob-pts').value);
+  const dueDay  = parseInt(document.getElementById('ob-dueday').value);
+  const ptsEl   = document.getElementById('ob-pts');
+  const pts     = ptsEl ? parseInt(ptsEl.value) : NaN;
 
   if (expiry)        c.expiry        = expiry;
   if (!isNaN(stmtDay) && stmtDay >= 1 && stmtDay <= 28) c.statement_day = stmtDay;
+  if (!isNaN(dueDay)  && dueDay  >= 1 && dueDay  <= 31) c.due_day       = dueDay;
   if (!isNaN(pts) && pts >= 0) {
     c.points_prev = c.points;
     c.points      = pts;
@@ -1755,64 +1794,18 @@ function beginCardSetup() {
 // ═══════════════════════════════════════════════════════════
 // PWA — MANIFEST + SERVICE WORKER
 // ═══════════════════════════════════════════════════════════
-// Inline manifest via data URI
-(function() {
-  const manifest = {
-    name: 'Miles Tracker',
-    short_name: 'Miles',
-    description: 'Track KrisFlyer miles across your credit cards',
-    start_url: '.',
-    display: 'standalone',
-    theme_color: '#1A3C5E',
-    background_color: '#1A3C5E',
-    icons: [
-      { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231A3C5E"/><rect x="20" y="20" width="60" height="60" rx="12" fill="%232DD4A0"/></svg>', sizes: '192x192', type: 'image/svg+xml' },
-      { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231A3C5E"/><rect x="20" y="20" width="60" height="60" rx="12" fill="%232DD4A0"/></svg>', sizes: '512x512', type: 'image/svg+xml' }
-    ]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-  const url  = URL.createObjectURL(blob);
-  const link = document.querySelector('link[rel=manifest]');
-  if (link) link.href = url;
-})();
-
-// Service worker registration
+// manifest.json and sw.js live next to index.html in the repo.
+// (Browsers refuse to register a service worker from a blob: URL, so it must be a real file.)
 if ('serviceWorker' in navigator) {
-  const swCode = `
-const CACHE = 'miles-tracker-v2';
-const SHELL = ['./'];
-const PDF_CDN = 'https://cdnjs.cloudflare.com';
-
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
-});
-self.addEventListener('activate', e => {
-  e.waitUntil(clients.claim());
-});
-self.addEventListener('fetch', e => {
-  const url = e.request.url;
-  if (url.includes(PDF_CDN)) {
-    // Network first for CDN
-    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
-    return;
-  }
-  // Cache first for app shell
-  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).then(res => {
-    const clone = res.clone();
-    caches.open(CACHE).then(c => c.put(e.request, clone));
-    return res;
-  })));
-});
-  `;
-  const swBlob = new Blob([swCode], {type: 'application/javascript'});
-  const swUrl  = URL.createObjectURL(swBlob);
-  navigator.serviceWorker.register(swUrl).catch(() => {});
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .catch(err => console.warn('Service worker registration failed:', err));
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
-// old init removed
 
 
 
@@ -1834,8 +1827,25 @@ function getPointsHistory(cardId) {
   // Also add current value if we have it
   const mk = monthKey();
   const c = appData.cards[cardId];
-  if (c.points !== null && !cardHistory[mk]) months.push({key:mk,label:'Now',points:c.points});
+  if (c.points !== null && cardHistory[mk] === undefined) months.push({key:mk,label:'Now',points:c.points});
   return months;
+}
+
+// Chart series: the two UOB cards share one UNI$ pool, so they're charted as one line
+const SERIES = [
+  { id: 'citi_rewards',    name: 'Citi Rewards' },
+  { id: 'hsbc_revolution', name: 'HSBC Revolution' },
+  { id: 'uob_pool',        name: 'UOB UNI$ pool' },
+];
+function getSeriesHistory(seriesId) {
+  if (seriesId !== 'uob_pool') return getPointsHistory(seriesId);
+  const pref = getPointsHistory('uob_preferred'), lady = getPointsHistory('uob_ladys');
+  const byKey = {};
+  [...pref, ...lady].forEach(p => {
+    byKey[p.key] = byKey[p.key] || { key: p.key, label: p.label, points: 0 };
+    byKey[p.key].points += p.points;
+  });
+  return Object.values(byKey).sort((a, b) => a.key.localeCompare(b.key));
 }
 
 function updatePoints(cardId, points) {
@@ -1868,7 +1878,7 @@ async function handleFile(event, cardId) {
         updatePoints('uob_preferred', poolPts);
         updatePoints('uob_ladys', 0);
         flashCard('uob_preferred', true); flashCard('uob_ladys', true);
-        showParseResult('uob_preferred', `Pool total: ${formatNum(poolPts)} UNI$ = ${formatNum(Math.floor(poolPts*0.4))} KrisFlyer miles`, true);
+        showParseResult('uob_preferred', `Pool total: ${formatNum(poolPts)} UNI$ = ${formatNum(CONVERSION.uob_pool(poolPts))} KrisFlyer miles`, true);
         showToast(`UOB: ${formatNum(poolPts)} UNI$ parsed`);
       } else {
         flashCard('uob_preferred', false);
@@ -1897,12 +1907,6 @@ async function handleFile(event, cardId) {
   setUploadLoading(cardId, false);
 }
 
-function toggleFooter() {
-  const c=document.getElementById('footer-content');
-  const a=document.getElementById('footer-arrow');
-  c.classList.toggle('open');
-  a.textContent=c.classList.contains('open')?'▾':'▸';
-}
 
 
 function openModal(id){document.getElementById(id).classList.add('open')}
@@ -1980,14 +1984,36 @@ function flipCard(cardId) {
   }
 }
 
+// Programmatic open (used by the nudge bar) — bypasses the swipe guard
+function openCardBack(cardId) {
+  const card = document.getElementById('fc-' + cardId);
+  if (!card || _flippedCards.has(cardId)) return;
+  _flippedCards.add(cardId);
+  card.classList.add('flipped');
+  renderCardBack(cardId);
+}
+function openNudgeTarget() {
+  const cardId = document.getElementById('nudge-bar').dataset.cardId;
+  if (!cardId) return;
+  switchTab('cards', document.getElementById('tab-btn-cards'));
+  const idx = cardIds.indexOf(cardId);
+  if (idx === _activeIdx) { openCardBack(cardId); return; }
+  _goTo(idx);
+  setTimeout(() => openCardBack(cardId), 320);
+}
+document.getElementById('nudge-bar').addEventListener('click', openNudgeTarget);
+document.getElementById('nudge-bar').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openNudgeTarget(); }
+});
+
 // ═══════════════════════════════════════════════════════════
 // CARD META + BACK RENDERING
 // ═══════════════════════════════════════════════════════════
 const CARD_META = {
   citi_rewards:    { name:'Citi Rewards',           ptsLabel:'ThankYou Points',  rate:'10,000 pts → 4,000 miles',      rateBadge:'×0.4',   dotColor:'rgba(160,60,60,0.70)',  isUOB:false, isHSBC:false },
   hsbc_revolution: { name:'HSBC Revolution',        ptsLabel:'Reward Points',    rate:'30,000 pts → 10,000 miles',     rateBadge:'×0.333', dotColor:'rgba(100,60,140,0.70)', isUOB:false, isHSBC:true  },
-  uob_preferred:   { name:'UOB Preferred Platinum', ptsLabel:'UNI$ Pool',        rate:'1 UNI$ → 0.4 KrisFlyer miles',  rateBadge:'×0.4',   dotColor:'rgba(50,80,140,0.70)',  isUOB:true,  isHSBC:false },
-  uob_ladys:       { name:"UOB Lady's Card",        ptsLabel:'UNI$ Pool',        rate:'Pooled with Preferred Platinum', rateBadge:'×0.4',   dotColor:'rgba(50,80,140,0.70)',  isUOB:true,  isHSBC:false },
+  uob_preferred:   { name:'UOB Preferred Platinum', ptsLabel:'UNI$ Pool',        rate:'1 UNI$ → 2 KrisFlyer miles',    rateBadge:'×2',     dotColor:'rgba(50,80,140,0.70)',  isUOB:true,  isHSBC:false },
+  uob_ladys:       { name:"UOB Lady's Card",        ptsLabel:'UNI$ Pool',        rate:'Pooled with Preferred Platinum', rateBadge:'×2',     dotColor:'rgba(50,80,140,0.70)',  isUOB:true,  isHSBC:false },
 };
 
 function renderCardBack(cardId) {
@@ -1999,7 +2025,8 @@ function renderCardBack(cardId) {
   const exp  = getExpiryState(cardId);
   const miles = cardId.startsWith('uob') ? calcUOBPool().miles : calcMiles(cardId);
   const delta = (c.points !== null && c.points_prev !== null) ? c.points - c.points_prev : null;
-  const stmtText = c.statement_day ? `${c.statement_day}${ordinal(c.statement_day)} of month` : 'Not set';
+  const stmtText = !c.statement_day ? 'Not set'
+    : `Statement ${c.statement_day}${ordinal(c.statement_day)}` + (c.due_day ? ` · due ${c.due_day}${ordinal(c.due_day)}` : ' · due day not set');
   const deltaHtml = delta === null ? '' : delta > 0
     ? `<span style="color:var(--accent);font-size:11px;font-weight:600;margin-top:1px">+${formatNum(delta)} this month</span>`
     : delta < 0 ? `<span style="color:var(--red);font-size:11px;font-weight:600;margin-top:1px">${formatNum(delta)} this month</span>` : '';
@@ -2046,7 +2073,7 @@ function renderCardBack(cardId) {
     </div>
     <div class="back-row" style="cursor:default">
       <div class="back-row-left">
-        <span class="back-row-label">Statement Day</span>
+        <span class="back-row-label">Billing Dates</span>
         <span class="back-row-value" id="back-stmt-${cardId}">${stmtText}</span>
       </div>
       <button class="back-edit-btn" onclick="event.stopPropagation();openStmtDayModal('${cardId}')">
@@ -2104,7 +2131,7 @@ function renderAll() {
   // UOB Preferred and Lady's share one combined PDF — count as 1
   if (uploads['uob_preferred'] === mk || uploads['uob_ladys'] === mk) count++;
   const badge = document.getElementById('completion-badge');
-  badge.textContent = `${count} / 3 PDFs`;
+  badge.textContent = `${count} / 3 updated`;
   badge.className = count === 3 ? 'top-badge' : 'top-badge incomplete';
 
   const nudge = computeNudge();
@@ -2114,7 +2141,9 @@ function renderAll() {
     nudgeEl.className = cls;  // ID handles base styles, class drives colour variant
     nudgeEl.style.display = 'block';
     nudgeEl.textContent = nudge.text;
+    nudgeEl.dataset.cardId = nudge.cardId || '';
   } else {
+    nudgeEl.dataset.cardId = '';
     nudgeEl.className = '';
     nudgeEl.style.display = 'none';
   }
@@ -2151,11 +2180,12 @@ function setUploadLoading(cardId, loading) {
   const btn = document.getElementById('back-upload-btn-'+cardId);
   if (!btn) return;
   if (loading) {
+    btn.dataset.idleHtml = btn.innerHTML;
     btn.classList.add('loading');
     btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Parsing...';
   } else {
     btn.classList.remove('loading');
-    btn.innerHTML = cardId.startsWith('uob') ? 'Upload Combined UOB PDF' : 'Upload Statement';
+    if (btn.dataset.idleHtml) btn.innerHTML = btn.dataset.idleHtml;
   }
 }
 
@@ -2166,17 +2196,23 @@ function renderHistoryRows() {
   const container = document.getElementById('history-card-list');
   if (!container) return;
   const pool = calcUOBPool();
-  container.innerHTML = cardIds.map(id => {
-    const c=appData.cards[id], meta=CARD_META[id];
-    const miles = id.startsWith('uob') ? pool.miles : calcMiles(id);
-    const pts   = id.startsWith('uob') ? pool.unis  : c.points;
-    const updated = c.last_updated ? `Updated ${formatDate(c.last_updated)}` : 'Not yet uploaded';
+  const uobP = appData.cards.uob_preferred, uobL = appData.cards.uob_ladys;
+  const uobUpdated = [uobP.last_updated, uobL.last_updated].filter(Boolean).sort().pop() || null;
+  const hasUob = uobP.points !== null || uobL.points !== null;
+  const rows = [
+    { name: 'Citi Rewards',    color: getGraphColor('citi_rewards'),    pts: appData.cards.citi_rewards.points,    unit: 'ThankYou Points', miles: calcMiles('citi_rewards'),    updated: appData.cards.citi_rewards.last_updated },
+    { name: 'HSBC Revolution', color: getGraphColor('hsbc_revolution'), pts: appData.cards.hsbc_revolution.points, unit: 'Reward Points',   miles: calcMiles('hsbc_revolution'), updated: appData.cards.hsbc_revolution.last_updated },
+    { name: 'UOB UNI$ pool',   color: getGraphColor('uob_pool'),        pts: hasUob ? pool.unis : null,            unit: "UNI$ · Preferred + Lady's", miles: hasUob ? pool.miles : null, updated: uobUpdated },
+  ];
+  container.innerHTML = rows.map(r => {
+    const pts = r.pts, miles = r.miles;
+    const updated = r.updated ? `Updated ${formatDate(r.updated)}` : 'Not yet updated';
     return `<div class="history-card-row">
       <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:8px;height:8px;border-radius:50%;background:${meta.dotColor};flex-shrink:0"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:${r.color};flex-shrink:0"></div>
         <div>
-          <div class="history-card-name">${meta.name}</div>
-          <div class="history-card-pts">${pts!==null?formatNum(pts)+' '+meta.ptsLabel:'No data'}</div>
+          <div class="history-card-name">${r.name}</div>
+          <div class="history-card-pts">${pts!==null?formatNum(pts)+' '+r.unit:'No data'}</div>
         </div>
       </div>
       <div style="text-align:right">
@@ -2190,8 +2226,7 @@ function renderHistoryRows() {
 function getGraphColor(id) {
   if (id==='citi_rewards')    return '#E5484D';
   if (id==='hsbc_revolution') return '#DB2777';
-  if (id==='uob_preferred')   return '#3B82F6';
-  return '#60A5FA';
+  return '#3B82F6'; // UOB pool
 }
 
 function drawGraph() {
@@ -2204,7 +2239,7 @@ function drawGraph() {
   canvas.style.width=W+'px'; canvas.style.height=H+'px';
   ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H);
 
-  const allSeries = cardIds.map(id=>({id,history:getPointsHistory(id),color:getGraphColor(id)}));
+  const allSeries = SERIES.map(sr=>({id:sr.id,name:sr.name,history:getSeriesHistory(sr.id),color:getGraphColor(sr.id)}));
   let allDates = [...new Set(allSeries.flatMap(s=>s.history.map(p=>p.key)))].sort();
 
   if (!allDates.length) {
@@ -2219,7 +2254,7 @@ function drawGraph() {
       let miles;
       if (s.id === 'citi_rewards')    miles = CONVERSION.citi_rewards(p.points);
       else if (s.id === 'hsbc_revolution') miles = CONVERSION.hsbc_revolution(p.points);
-      else miles = CONVERSION.uob_pool(p.points); // UOB — points are already pool UNI$
+      else miles = CONVERSION.uob_pool(p.points); // UOB pool UNI$
       map[p.key] = miles;
     });
     return{...s,values:allDates.map(d=>map[d]??null)};
@@ -2257,7 +2292,7 @@ function drawGraph() {
     });
   });
   const legend=document.getElementById('graph-legend');
-  if(legend) legend.innerHTML=aligned.map(s=>`<div class="legend-item"><div class="legend-dot" style="background:${s.color}"></div>${CARD_META[s.id].name}</div>`).join('');
+  if(legend) legend.innerHTML=aligned.map(s=>`<div class="legend-item"><div class="legend-dot" style="background:${s.color}"></div>${s.name}</div>`).join('');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2350,6 +2385,7 @@ _wrap.addEventListener('touchcancel',()=>{
 // Mouse
 _wrap.addEventListener('mousedown',e=>{
   if(_animating)return;
+  if(e.target.closest('input, textarea, select'))return; // let fields take focus
   _dragging=true;_isHoriz=true;
   _startX=e.clientX;_startOff=_cx;
   _rail.querySelectorAll('.flip-card').forEach(c=>c.style.transition='none');
