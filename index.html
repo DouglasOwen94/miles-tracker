@@ -1665,7 +1665,8 @@ function getPaymentState(cardId) {
   const stmtText = formatDayMonth(stmt);
   if (c.paid_for === stmtKey) {
     const next = formatDayMonth(nextStatementDate(c.statement_day));
-    return { state: 'paid', stmtKey, label: `Paid · next statement ${next}`, short: `Paid · next statement ${next}` };
+    return { state: 'paid', stmtKey, stmtText, next,
+             label: `${stmtText} statement paid · next one ${next}`, short: `${stmtText} statement paid` };
   }
 
   const due      = dueDateFor(stmt, c.due_day);
@@ -2509,6 +2510,13 @@ function removeGoal() {
 });
 
 // ═══ "This month" checklist sheet ═══
+// "Next: UOB statement on 12 Sept" — when the checklist will next have something new
+function nextStatementNote() {
+  const upcoming = BANK_IDS.filter(id => appData.cards[id].statement_day)
+    .map(id => ({ id, date: nextStatementDate(appData.cards[id].statement_day) }))
+    .sort((a, b) => a.date - b.date)[0];
+  return upcoming ? `Next: ${CARD_META[upcoming.id].short} statement on ${formatDayMonth(upcoming.date)}.` : '';
+}
 function openMonthSheet() {
   renderMonthSheet();
   openModal('month-modal');
@@ -2518,10 +2526,9 @@ function renderMonthSheet() {
   if (!list) return;
   const tasks = getMonthTasks();
   const done = tasks.filter(t => t.done).length;
-  const monthName = today().toLocaleDateString('en-SG', { month: 'long' });
   document.getElementById('month-sub').textContent = done === tasks.length
-    ? `All done for ${monthName}.`
-    : `${done} of ${tasks.length} done for ${monthName}.`;
+    ? `All caught up. ${nextStatementNote()}`
+    : `${done} of ${tasks.length} done. ${nextStatementNote()}`;
   document.getElementById('month-progress-fill').style.width = `${Math.round(done / tasks.length * 100)}%`;
 
   const check = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#050C14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
@@ -2542,7 +2549,7 @@ function renderMonthSheet() {
       payMeta = 'Add billing dates to track this';
     } else if (ps.state === 'paid') {
       payBtn = `<button class="task-btn ghost" onclick="togglePayment('${id}')">Undo</button>`;
-      payMeta = ps.short;
+      payMeta = `${ps.short} · next statement ${ps.next}`;
     } else {
       payBtn = `<button class="task-btn" onclick="togglePayment('${id}')">Mark paid</button>`;
       payMeta = `${ps.short} · ${ps.stmtText} statement`;
@@ -2842,7 +2849,8 @@ function renderCardBack(cardId) {
       <div class="back-row-left">
         <span class="back-row-label">Payment</span>
         <span class="back-row-value" id="back-payment-text-${cardId}">${ps.short || ps.label}</span>
-        ${ps.stmtText && ps.state !== 'paid' ? `<span class="back-row-sub">For the ${ps.stmtText} statement · tap when paid</span>` : ''}
+        ${ps.state === 'paid' ? `<span class="back-row-sub">Resets when the next statement comes out on ${ps.next}</span>`
+          : ps.stmtText ? `<span class="back-row-sub">For the ${ps.stmtText} statement · tap when paid</span>` : ''}
       </div>
       <div class="toggle-sw" id="back-toggle-${cardId}" role="switch" aria-checked="${ps.state === 'paid'}" aria-label="Paid"></div>
     </div>` : ''}
@@ -2899,7 +2907,7 @@ function renderAll() {
   const tasks = getMonthTasks();
   const doneCount = tasks.filter(t => t.done).length;
   const badge = document.getElementById('completion-badge');
-  badge.textContent = doneCount === tasks.length ? 'This month ✓' : `This month · ${doneCount}/${tasks.length}`;
+  badge.textContent = doneCount === tasks.length ? 'Up to date ✓' : `This month · ${doneCount}/${tasks.length}`;
   badge.className = doneCount === tasks.length ? 'top-badge' : 'top-badge incomplete';
 
   const nudge = computeNudge();
