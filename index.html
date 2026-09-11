@@ -642,13 +642,55 @@ body {
 .tab-page.active::-webkit-scrollbar { display: none; }
 
 /* History */
-.history-sub   { font-size: 13px; color: var(--text-3); margin-bottom: 20px; }
+.history-sub   { font-size: 12px; color: var(--text-3); line-height: 1.5; margin: 0 2px 4px; }
 .graph-card {
   background: var(--surface); border-radius: 16px;
   border: 1px solid var(--border); padding: 18px; margin-bottom: 14px;
 }
 .graph-card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-3); margin-bottom: 14px; }
-#graph-canvas { width: 100%; height: 180px; display: block; }
+.earn-summary { font-size: 13px; color: var(--text-2); margin: -6px 0 14px; line-height: 1.45; }
+.earn-summary strong { color: var(--text); font-weight: 700; }
+.earn-chart {
+  display: flex; align-items: stretch; gap: 4px; height: 196px;
+  border-bottom: 1px solid var(--border2); padding-bottom: 0; margin: 0 -4px;
+}
+.earn-col {
+  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center;
+  background: none; border: none; padding: 0 1px; cursor: pointer; font-family: inherit;
+  color: var(--text-2); border-radius: 8px 8px 0 0;
+}
+.earn-col:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.earn-col.selected { background: rgba(255,255,255,0.05); }
+.earn-val {
+  font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1;
+  height: 16px; padding-top: 4px; color: var(--text-2); white-space: nowrap;
+}
+.earn-col.best .earn-val { color: var(--accent); }
+.earn-bar-area { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.earn-bar {
+  width: min(28px, 78%); display: flex; flex-direction: column-reverse;
+  border-radius: 6px 6px 0 0; overflow: hidden; min-height: 3px;
+  transition: height 0.45s cubic-bezier(0.22,1,0.36,1);
+}
+.earn-bar span { display: block; width: 100%; }
+.earn-bar span + span { box-shadow: 0 -1px 0 rgba(8,12,20,0.55) inset; }
+.earn-col:not(.best):not(.selected) .earn-bar { opacity: 0.72; }
+.earn-empty-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--border2); margin-bottom: 2px; }
+.earn-month { font-size: 11px; font-weight: 600; padding: 7px 0 6px; white-space: nowrap; }
+.earn-col.best .earn-month { color: var(--text); }
+.earn-detail { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+.earn-detail:empty { display: none; }
+.earn-detail-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; gap: 10px; }
+.earn-detail-month { font-size: 14px; font-weight: 700; }
+.earn-detail-total { font-size: 15px; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.earn-row { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 10px; align-items: baseline; padding: 6px 0; }
+.earn-row .legend-dot { align-self: center; }
+.earn-row-name { font-size: 13px; font-weight: 600; }
+.earn-row-pts  { font-size: 12px; color: var(--text-2); grid-column: 2; }
+.earn-row-miles { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; grid-row: 1; grid-column: 3; }
+.earn-row-note { font-size: 12px; color: var(--text-3); grid-column: 2 / -1; }
+.earn-empty { font-size: 13px; color: var(--text-2); line-height: 1.5; padding: 28px 8px; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .earn-bar { transition: none; } }
 .graph-legend { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
 .legend-item  { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); font-weight: 500; }
 .legend-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -1253,12 +1295,15 @@ input[type=file] { display: none; }
 
   <!-- HISTORY TAB — in-flow, tab bar stays visible -->
   <div class="tab-page" id="tab-history">
-    <div class="history-sub" style="margin-bottom:16px">Miles value of each balance, month by month. Logged transfers move value from a bank line to the KrisFlyer line.</div>
     <div class="graph-card">
-      <div class="graph-card-title">Miles value by account</div>
-      <canvas id="graph-canvas"></canvas>
+      <div class="graph-card-title">Miles earned each month</div>
+      <div class="earn-summary" id="earn-summary"></div>
+      <div class="earn-chart" id="earn-chart" role="group" aria-label="Miles earned each month"></div>
       <div class="graph-legend" id="graph-legend"></div>
+      <div class="earn-detail" id="earn-detail" aria-live="polite"></div>
     </div>
+    <div class="history-sub">Worked out from your balance updates: each month's rise in points, converted to miles so cards compare fairly. Logged transfers don't count as drops. Tap a month for the breakdown.</div>
+    <div class="settings-group-label" style="margin-top:18px">Balances now</div>
     <div id="history-card-list"></div>
     <div class="settings-group-label" style="margin-top:22px">Transfers to KrisFlyer</div>
     <div id="transfer-list"></div>
@@ -2206,24 +2251,6 @@ if ('serviceWorker' in navigator) {
 
 let heroAnimFrame = null;
 
-function getPointsHistory(cardId) {
-  const history = appData.history || {};
-  const cardHistory = history[cardId] || {};
-  // Build 12 month labels
-  const months = [];
-  const now = today();
-  for (let i=11; i>=0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    const label = d.toLocaleDateString('en-SG',{month:'short'});
-    if (cardHistory[key] !== undefined) months.push({key,label,points:cardHistory[key]});
-  }
-  // Also add current value if we have it
-  const mk = monthKey();
-  const c = appData.cards[cardId];
-  if (c.points !== null && cardHistory[mk] === undefined) months.push({key:mk,label:'Now',points:c.points});
-  return months;
-}
 
 function updatePoints(cardId, points, render = true) {
   const c = appData.cards[cardId];
@@ -2991,75 +3018,122 @@ function renderTransferList() {
 
 function getGraphColor(id) {
   if (id==='citi_rewards')    return '#E5484D';
-  if (id==='hsbc_revolution') return '#DB2777';
+  if (id==='hsbc_revolution') return '#A78BFA';  // violet, like the HSBC card
   if (id==='krisflyer')       return '#C9A94E';
   return '#3B82F6'; // UOB
 }
 
-function drawGraph() {
-  const canvas = document.getElementById('graph-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const dpr = window.devicePixelRatio||1;
-  const W = canvas.parentElement.clientWidth - 36, H = 180;
-  canvas.width=W*dpr; canvas.height=H*dpr;
-  canvas.style.width=W+'px'; canvas.style.height=H+'px';
-  ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H);
-
-  const allSeries = cardIds.map(id=>({id,name:CARD_META[id].short,history:getPointsHistory(id),color:getGraphColor(id)}));
-  let allDates = [...new Set(allSeries.flatMap(s=>s.history.map(p=>p.key)))].sort();
-
-  if (!allDates.length) {
-    ctx.fillStyle='rgba(238,242,248,0.20)'; ctx.font='13px Urbanist,system-ui,sans-serif';
-    ctx.textAlign='center'; ctx.fillText('No history yet — upload a statement',W/2,H/2); return;
-  }
-
-  const aligned = allSeries.map(s=>{
-    const map={}; 
-    s.history.forEach(p=>{
-      const miles = CONVERSION[s.id](p.points);
-      map[p.key] = miles;
-    });
-    return{...s,values:allDates.map(d=>map[d]??null)};
-  });
-  const allVals = aligned.flatMap(s=>s.values.filter(v=>v!==null));
-  const maxVal  = Math.max(...allVals,1);
-  const pad={top:12,right:12,bottom:28,left:40}, n=allDates.length;
-  const gW=W-pad.left-pad.right, gH=H-pad.top-pad.bottom;
-
-  [0,0.25,0.5,0.75,1].forEach(t=>{
-    const y=pad.top+gH*(1-t);
-    ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(pad.left,y); ctx.lineTo(pad.left+gW,y); ctx.stroke();
-    if(t>0){ctx.fillStyle='rgba(238,242,248,0.28)';ctx.font='500 10px Urbanist,system-ui';ctx.textAlign='right';ctx.fillText(formatNum(Math.round(maxVal*t)),pad.left-5,y+4);}
-  });
-  ctx.fillStyle='rgba(238,242,248,0.28)';ctx.font='500 10px Urbanist,system-ui';ctx.textAlign='center';
-  const multiYear = new Set(allDates.map(d=>d.slice(0,4))).size > 1;
-  allDates.forEach((d,i)=>{
-    if(n<=6||i%Math.ceil(n/5)===0||i===n-1){
-      const x=pad.left+(n===1?gW/2:(i/(n-1))*gW);
-      const dt=parseLocalDate(d+'-01');
-      const lbl=dt.toLocaleDateString('en-SG',{month:'short'})+(multiYear?` '${d.slice(2,4)}`:'');
-      ctx.textAlign = n>1&&i===n-1 ? 'right' : n>1&&i===0 ? 'left' : 'center';
-      ctx.fillText(lbl,x,H-6);
+// ── Miles earned per month ──
+// For each bank account: this month's balance − the previous recorded balance
+// + any points transferred out in between. Converted to miles so cards can be added up.
+// KrisFlyer isn't counted: its increases are transfers, not new earning.
+function monthDiff(a, b) {           // 'YYYY-MM' → months from a to b
+  const [y1, m1] = a.split('-').map(Number), [y2, m2] = b.split('-').map(Number);
+  return (y2 - y1) * 12 + (m2 - m1);
+}
+function addMonths(mk, n) {
+  const [y, m] = mk.split('-').map(Number);
+  const d = new Date(y, m - 1 + n, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+function monthlyEarnings() {
+  const hist = appData.history || {}, transfers = appData.transfers || [];
+  const months = {};
+  BANK_IDS.forEach(id => {
+    const h = hist[id] || {};
+    const keys = Object.keys(h).sort();
+    for (let i = 1; i < keys.length; i++) {
+      const prev = keys[i - 1], k = keys[i];
+      const moved = transfers.filter(t => t.from === id && t.date.slice(0, 7) > prev && t.date.slice(0, 7) <= k)
+                             .reduce((sum, t) => sum + t.points, 0);
+      const raw = h[k] - h[prev] + moved;
+      const points = Math.max(0, raw);
+      const m = months[k] || (months[k] = { key: k, miles: 0, parts: {} });
+      m.parts[id] = { points, miles: CONVERSION[id](points), span: monthDiff(prev, k), dropped: raw < 0 };
+      m.miles += m.parts[id].miles;
     }
   });
-  aligned.forEach(s=>{
-    ctx.strokeStyle=s.color; ctx.lineWidth=2; ctx.lineJoin='round'; ctx.lineCap='round';
-    ctx.beginPath(); let started=false;
-    s.values.forEach((v,i)=>{
-      if(v===null)return;
-      const x=pad.left+(n===1?gW/2:(i/(n-1))*gW), y=pad.top+gH*(1-v/maxVal);
-      started?(ctx.lineTo(x,y)):(ctx.moveTo(x,y),started=true);
-    }); ctx.stroke();
-    s.values.forEach((v,i)=>{
-      if(v===null)return;
-      const x=pad.left+(n===1?gW/2:(i/(n-1))*gW), y=pad.top+gH*(1-v/maxVal);
-      ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fillStyle=s.color; ctx.fill();
-    });
-  });
-  const legend=document.getElementById('graph-legend');
-  if(legend) legend.innerHTML=aligned.map(s=>`<div class="legend-item"><div class="legend-dot" style="background:${s.color}"></div>${s.name}</div>`).join('');
+  const keys = Object.keys(months).sort();
+  if (!keys.length) return { list: [], best: null, avg: 0 };
+  // Continuous run of months (last 12), so gaps show as empty columns
+  const last = keys[keys.length - 1];
+  const first = keys.length && monthDiff(keys[0], last) > 11 ? addMonths(last, -11) : keys[0];
+  const list = [];
+  for (let k = first; k <= last; k = addMonths(k, 1)) list.push(months[k] || { key: k, miles: null, parts: {} });
+  const withData = list.filter(m => m.miles !== null);
+  const best = withData.reduce((b, m) => (!b || m.miles > b.miles) ? m : b, null);
+  const avg = Math.round(withData.reduce((sum, m) => sum + m.miles, 0) / list.length);
+  return { list, best, avg };
+}
+function compactMiles(n) {
+  if (n >= 100000) return Math.round(n / 1000) + 'k';
+  if (n >= 1000)   return (Math.round(n / 100) / 10).toFixed(1).replace(/\.0$/, '') + 'k';
+  return String(n);
+}
+function monthLabel(mk, withYear) {
+  return parseLocalDate(mk + '-01').toLocaleDateString('en-SG', withYear ? { month: 'long', year: 'numeric' } : { month: 'short' });
+}
+
+let _earnSelected = null;
+function drawGraph() {
+  const chart = document.getElementById('earn-chart');
+  if (!chart) return;
+  const { list, best, avg } = monthlyEarnings();
+  const summary = document.getElementById('earn-summary');
+  const legend = document.getElementById('graph-legend');
+  if (!best) {
+    summary.textContent = '';
+    legend.innerHTML = '';
+    document.getElementById('earn-detail').innerHTML = '';
+    chart.innerHTML = '<div class="earn-empty">A bar appears once a card has balances from two different months — so after your next statement update.</div>';
+    return;
+  }
+  summary.innerHTML = `Best month: <strong>${monthLabel(best.key, true)}</strong> with <strong>${formatNum(best.miles)} miles</strong>`
+    + (list.length > 1 ? ` · average ${formatNum(avg)} a month` : '');
+  if (!_earnSelected || !list.some(m => m.key === _earnSelected && m.miles !== null)) {
+    _earnSelected = [...list].reverse().find(m => m.miles !== null).key;
+  }
+  const max = Math.max(1, best.miles);
+  const multiYear = new Set(list.map(m => m.key.slice(0, 4))).size > 1;
+  const showAllValues = list.length <= 7;
+  chart.innerHTML = list.map(m => {
+    const isBest = m.key === best.key, isSel = m.key === _earnSelected;
+    const label = monthLabel(m.key) + (multiYear && m.key.endsWith('-01') ? ` '${m.key.slice(2, 4)}` : '');
+    if (m.miles === null) {
+      return `<button class="earn-col" disabled aria-label="${monthLabel(m.key, true)}: no update">
+        <span class="earn-val"></span><span class="earn-bar-area"><span class="earn-empty-dot"></span></span>
+        <span class="earn-month" style="opacity:.5">${label}</span></button>`;
+    }
+    const segs = BANK_IDS.filter(id => m.parts[id] && m.parts[id].miles > 0)
+      .map(id => `<span style="background:${getGraphColor(id)};height:${m.parts[id].miles / Math.max(1, m.miles) * 100}%"></span>`).join('');
+    return `<button class="earn-col${isBest ? ' best' : ''}${isSel ? ' selected' : ''}" data-mk="${m.key}"
+        aria-pressed="${isSel}" aria-label="${monthLabel(m.key, true)}: ${formatNum(m.miles)} miles earned${isBest ? ', best month' : ''}">
+      <span class="earn-val">${showAllValues || isBest || isSel ? compactMiles(m.miles) : ''}</span>
+      <span class="earn-bar-area"><span class="earn-bar" style="height:${Math.max(2, m.miles / max * 100)}%">${segs}</span></span>
+      <span class="earn-month">${label}</span></button>`;
+  }).join('');
+  chart.querySelectorAll('.earn-col[data-mk]').forEach(b => b.addEventListener('click', () => { _earnSelected = b.dataset.mk; drawGraph(); }));
+  legend.innerHTML = BANK_IDS.map(id => `<div class="legend-item"><div class="legend-dot" style="background:${getGraphColor(id)}"></div>${CARD_META[id].short}</div>`).join('');
+  renderEarnDetail(list.find(m => m.key === _earnSelected));
+}
+function renderEarnDetail(m) {
+  const el = document.getElementById('earn-detail');
+  const rows = BANK_IDS.map(id => {
+    const p = m.parts[id], meta = CARD_META[id];
+    if (!p) return `<div class="earn-row"><div class="legend-dot" style="background:${getGraphColor(id)}"></div>
+      <div class="earn-row-name">${meta.short}</div><div class="earn-row-miles" style="color:var(--text-3)">—</div>
+      <div class="earn-row-note">No update this month</div></div>`;
+    const notes = [];
+    if (p.span > 1) notes.push(`Covers ${p.span} months — no update in between`);
+    if (p.dropped) notes.push('Balance went down — points used or expired?');
+    return `<div class="earn-row"><div class="legend-dot" style="background:${getGraphColor(id)}"></div>
+      <div class="earn-row-name">${meta.short}</div>
+      <div class="earn-row-miles">${formatNum(p.miles)} mi</div>
+      <div class="earn-row-pts">+${formatNum(p.points)} ${meta.ptsLabel}</div>
+      ${notes.map(n => `<div class="earn-row-note">${n}</div>`).join('')}</div>`;
+  }).join('');
+  el.innerHTML = `<div class="earn-detail-head"><span class="earn-detail-month">${monthLabel(m.key, true)}</span>
+    <span class="earn-detail-total">${formatNum(m.miles)} miles</span></div>${rows}`;
 }
 
 // ═══════════════════════════════════════════════════════════
