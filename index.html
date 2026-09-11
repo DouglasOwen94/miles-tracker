@@ -125,6 +125,36 @@ body {
   margin-top: 3px; font-weight: 400;
 }
 
+/* Hero: total on the left, trip-goal dial on the right */
+#hero-section { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.hero-main { min-width: 0; }
+.goal-ring {
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  background: none; border: none; padding: 4px 0 2px 6px; cursor: pointer;
+  font-family: inherit; color: var(--text); text-align: right; border-radius: 12px;
+}
+.goal-ring:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.goal-ring-text { display: flex; flex-direction: column; gap: 2px; max-width: 110px; }
+#goal-ring-label { font-size: 12px; font-weight: 700; line-height: 1.2; }
+#goal-ring-meta  { font-size: 11px; font-weight: 500; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.goal-ring-dial { position: relative; width: 52px; height: 52px; flex-shrink: 0; }
+.goal-ring-dial svg { width: 52px; height: 52px; transform: rotate(-90deg); }
+.goal-ring-track { fill: none; stroke: var(--surface3); stroke-width: 5; }
+.goal-ring-fill {
+  fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round;
+  stroke-dasharray: 157.08; stroke-dashoffset: 157.08;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.22,1,0.36,1);
+}
+.goal-ring-pct {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.goal-ring.empty #goal-ring-label { color: var(--text-2); font-weight: 600; }
+.goal-ring.empty .goal-ring-track { stroke-dasharray: 4 5; stroke: var(--border2); }
+.goal-ring.empty .goal-ring-pct { color: var(--text-2); font-size: 20px; font-weight: 500; }
+.goal-ring.done .goal-ring-fill { stroke: #E8C45A; }
+@media (prefers-reduced-motion: reduce) { .goal-ring-fill { transition: none; } }
+
 /* Nudge bar */
 #nudge-bar {
   margin: 4px 20px 0;
@@ -345,6 +375,16 @@ body {
   letter-spacing: 0.04em;
   align-self: flex-end;
 }
+
+/* KrisFlyer — pale gold */
+.card-kf .flip-front,
+.card-kf .flip-back { background: linear-gradient(160deg, #DCCB98 0%, #CDB87C 28%, #BFA868 55%, #CBB67A 80%, #DDCD9C 100%); }
+
+/* Card back additions */
+.back-edit-btn { white-space: nowrap; flex-shrink: 0; }
+.back-row-note { font-size: 10px; font-weight: 600; color: rgba(0,0,0,0.50); margin-top: 2px; line-height: 1.35; }
+.back-row.transfer-ready { background: rgba(52,200,138,0.16); border-color: rgba(26,122,80,0.35); cursor: default; }
+.back-row.transfer-ready .back-row-value { color: rgba(0,90,55,0.92); }
 
 /* Narrow cards: keep labels on one line, compact the update button */
 .flip-card { container-type: inline-size; }
@@ -674,6 +714,26 @@ body {
 .modal-sub.is-error { color: #F0A0A0; }
 .points-preview { font-size: 13px; font-weight: 600; color: var(--accent); margin-top: 8px; min-height: 18px; font-variant-numeric: tabular-nums; }
 
+/* ── GOAL SHEET ── */
+select.modal-input {
+  -webkit-appearance: none; appearance: none; padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23EEF2F8' stroke-opacity='0.5' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+}
+select.modal-input option { background: var(--surface2); color: var(--text); }
+.goal-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px; }
+.seg { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 3px; }
+.seg-btn {
+  flex: 1; min-height: 44px; border: none; border-radius: 9px; background: transparent;
+  color: var(--text-2); font: 600 14px 'Urbanist', system-ui, sans-serif; cursor: pointer;
+}
+.seg-btn.active { background: var(--surface3); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.seg-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.goal-summary { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin: 4px 0 14px; }
+.goal-summary-value { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.goal-summary-have { font-size: 12px; color: var(--text-2); margin-top: 4px; }
+.transfer-empty { font-size: 13px; color: var(--text-3); padding: 14px 2px; line-height: 1.5; }
+
 /* ── THIS MONTH SHEET ── */
 .modal-tall { max-height: 90vh; overflow-y: auto; }
 .top-badge { font-family: inherit; cursor: pointer; }
@@ -804,11 +864,15 @@ input[type=file] { display: none; }
 <div class="modal-overlay" id="expiry-modal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="expiry-modal-title">Points Expiry</div>
-    <div class="modal-sub">When do your points expire?</div>
+    <div class="modal-title" id="expiry-modal-title">Points expiry</div>
+    <div class="modal-sub" id="expiry-modal-sub"></div>
     <div class="modal-field">
-      <label class="modal-label">Expiry Date</label>
+      <label class="modal-label" for="expiry-date-input" id="expiry-date-label">Expiry date</label>
       <input type="date" class="modal-input" id="expiry-date-input">
+    </div>
+    <div class="modal-field" id="expiry-amount-field">
+      <label class="modal-label" for="expiry-amount-input" id="expiry-amount-label">Amount expiring</label>
+      <input type="text" inputmode="numeric" autocomplete="off" class="modal-input" id="expiry-amount-input" placeholder="Optional">
     </div>
     <div class="modal-actions">
       <button class="modal-btn-secondary" onclick="closeModal('expiry-modal')">Cancel</button>
@@ -865,6 +929,63 @@ input[type=file] { display: none; }
   </div>
 </div>
 
+<div class="modal-overlay" id="transfer-modal">
+  <div class="modal" role="dialog" aria-labelledby="transfer-modal-title">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="transfer-modal-title">Log a transfer</div>
+    <div class="modal-sub" id="transfer-modal-sub"></div>
+    <div class="modal-field">
+      <label class="modal-label" for="transfer-input" id="transfer-modal-label">Points transferred</label>
+      <input type="text" inputmode="numeric" autocomplete="off" class="modal-input" id="transfer-input">
+      <div class="points-preview" id="transfer-preview"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" onclick="closeModal('transfer-modal')">Cancel</button>
+      <button class="modal-btn-primary"   onclick="saveTransfer()">Log transfer</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="goal-modal">
+  <div class="modal modal-tall" role="dialog" aria-labelledby="goal-modal-title">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="goal-modal-title">Trip goal</div>
+    <div class="modal-sub">Economy Saver awards from Singapore, based on Singapore Airlines' award chart effective 1 Nov 2025. Taxes are paid separately, and Saver seats are limited.</div>
+    <div class="modal-field">
+      <label class="modal-label" for="goal-zone">Destination</label>
+      <select class="modal-input" id="goal-zone"></select>
+    </div>
+    <div class="goal-row">
+      <div class="modal-field" id="goal-trip-field">
+        <span class="modal-label">Trip</span>
+        <div class="seg" role="group" aria-label="Trip type">
+          <button class="seg-btn" data-trip="oneway" onclick="setGoalTrip('oneway')">One-way</button>
+          <button class="seg-btn" data-trip="return" onclick="setGoalTrip('return')">Return</button>
+        </div>
+      </div>
+      <div class="modal-field" id="goal-pax-field">
+        <label class="modal-label" for="goal-pax">Travellers</label>
+        <select class="modal-input" id="goal-pax">
+          <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-field" id="goal-custom-field">
+      <label class="modal-label" for="goal-custom">Miles needed</label>
+      <input type="text" inputmode="numeric" autocomplete="off" class="modal-input" id="goal-custom" placeholder="e.g. 51,000">
+    </div>
+    <div class="goal-summary">
+      <div class="modal-label">Miles needed</div>
+      <div class="goal-summary-value" id="goal-total">—</div>
+      <div class="goal-summary-have" id="goal-have"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" id="goal-remove" onclick="removeGoal()">Remove</button>
+      <button class="modal-btn-secondary" onclick="closeModal('goal-modal')">Cancel</button>
+      <button class="modal-btn-primary"   onclick="saveGoal()">Save goal</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ APP SHELL ═══ -->
 <div id="app">
 
@@ -881,9 +1002,21 @@ input[type=file] { display: none; }
 
   <!-- HERO -->
   <div id="hero-section">
-    <div class="hero-eyebrow">Total KrisFlyer Miles</div>
-    <div class="hero-number" id="hero-miles">—</div>
-    <div class="hero-sub" id="hero-sub">Upload your statements to get started</div>
+    <div class="hero-main">
+      <div class="hero-eyebrow">Total KrisFlyer Miles</div>
+      <div class="hero-number" id="hero-miles">—</div>
+      <div class="hero-sub" id="hero-sub">Upload your statements to get started</div>
+    </div>
+    <button class="goal-ring empty" id="goal-ring-btn" onclick="openGoalSheet()" aria-label="Set a trip goal">
+      <span class="goal-ring-text"><span id="goal-ring-label">Set a trip goal</span><span id="goal-ring-meta"></span></span>
+      <span class="goal-ring-dial">
+        <svg viewBox="0 0 60 60" aria-hidden="true">
+          <circle cx="30" cy="30" r="25" class="goal-ring-track"/>
+          <circle cx="30" cy="30" r="25" class="goal-ring-fill" id="goal-ring-fill"/>
+        </svg>
+        <span class="goal-ring-pct" id="goal-ring-pct">+</span>
+      </span>
+    </button>
   </div>
 
   <!-- NUDGE -->
@@ -1032,6 +1165,51 @@ input[type=file] { display: none; }
           </div>
         </div>
 
+        <div class="flip-card card-kf" id="fc-krisflyer">
+          <div class="flip-inner" id="fi-krisflyer">
+            <div class="flip-front" onclick="flipCard('krisflyer')" role="button" tabindex="0" aria-label="KrisFlyer details">
+              <div class="check-overlay" id="check-krisflyer">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1a7a50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="card-top">
+                <span class="card-bank-name">KrisFlyer</span>
+                <span class="card-flip-hint">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                  <span class="hint-text">Tap for details</span>
+                </span>
+              </div>
+              <div class="card-mid">
+                <div class="card-name-big">Miles</div>
+                <div class="card-name-sub">Already transferred, ready to book</div>
+              </div>
+              <div class="card-bottom">
+                <div class="card-bottom-left">
+                  <div class="card-stat">
+                    <span class="card-stat-label">KrisFlyer Miles</span>
+                    <span class="card-stat-value" id="card-pts-krisflyer">—</span>
+                  </div>
+                  <div class="card-stat">
+                    <span class="card-stat-label">Next expiry</span>
+                    <span class="card-stat-value miles" id="card-miles-krisflyer">—</span>
+                  </div>
+                </div>
+                <button class="card-update-btn" id="front-update-krisflyer" onclick="event.stopPropagation();quickUpdate('krisflyer')"><span>Update</span></button>
+              </div>
+            </div>
+            <div class="flip-back" id="back-krisflyer">
+              <div class="card-back-header">
+                <div class="card-back-name">
+                  <div style="width:8px;height:8px;border-radius:50%;background:#C9A94E;flex-shrink:0"></div>
+                  KrisFlyer
+                </div>
+                <div class="card-back-close" onclick="flipCard('krisflyer')" role="button" aria-label="Close details">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </div>
+              </div>
+              <div class="card-back-body" id="back-body-krisflyer"></div>
+            </div>
+          </div>
+        </div>
       </div><!-- /cards-list -->
     </div><!-- /card-carousel-wrap -->
 
@@ -1040,18 +1218,21 @@ input[type=file] { display: none; }
       <div class="c-dot active"></div>
       <div class="c-dot"></div>
       <div class="c-dot"></div>
+      <div class="c-dot"></div>
     </div>
   </div><!-- /card-area -->
 
   <!-- HISTORY TAB — in-flow, tab bar stays visible -->
   <div class="tab-page" id="tab-history">
-    <div class="history-sub" style="margin-bottom:16px">Miles value of your balances, month by month. Drops usually mean you transferred points.</div>
+    <div class="history-sub" style="margin-bottom:16px">Miles value of each balance, month by month. Logged transfers move value from a bank line to the KrisFlyer line.</div>
     <div class="graph-card">
-      <div class="graph-card-title">KrisFlyer miles value by card</div>
+      <div class="graph-card-title">Miles value by account</div>
       <canvas id="graph-canvas"></canvas>
       <div class="graph-legend" id="graph-legend"></div>
     </div>
     <div id="history-card-list"></div>
+    <div class="settings-group-label" style="margin-top:22px">Transfers to KrisFlyer</div>
+    <div id="transfer-list"></div>
   </div>
 
   <!-- SETTINGS TAB — in-flow, tab bar stays visible -->
@@ -1136,16 +1317,49 @@ const PARSER_CONFIG = {
   }
 };
 
-// Conversion rates
+// Conversion rates (integer maths first, so exact block sizes never round down)
 const CONVERSION = {
-  citi_rewards:    pts  => Math.floor(pts / 10000 * 4000),   // 10k pts = 4k miles
-  hsbc_revolution: pts  => Math.floor(pts / 30000 * 10000),  // 30k pts = 10k miles
-  uob:             unis => Math.floor(unis * 2)              // 1 UNI$ = 2 KrisFlyer miles (5,000 UNI$ = 10,000 miles)
+  citi_rewards:    pts  => Math.floor(pts * 4000 / 10000),   // 25,000 pts = 10,000 miles
+  hsbc_revolution: pts  => Math.floor(pts * 10000 / 30000),  // 30,000 pts = 10,000 miles
+  uob:             unis => Math.floor(unis * 2),             // 1 UNI$ = 2 KrisFlyer miles
+  krisflyer:       m    => m                                 // already miles
 };
 
-// Accounts. UOB Preferred Platinum + Lady's share one UNI$ pool and one combined statement,
-// so they're tracked as a single account.
-const cardIds = ['citi_rewards', 'hsbc_revolution', 'uob'];
+// Bank accounts. UOB Preferred Platinum + Lady's share one UNI$ pool and one combined statement.
+const BANK_IDS = ['citi_rewards', 'hsbc_revolution', 'uob'];
+// Everything shown in the carousel: the banks plus your KrisFlyer account
+const cardIds  = [...BANK_IDS, 'krisflyer'];
+
+// How each bank transfers to KrisFlyer
+const TRANSFER_RULES = {
+  citi_rewards:    { minPts: 25000, stepPts: 25000, fee: 'S$27.25', feeNote: 'S$27.25 per transfer',  rule: '25,000-point blocks (10,000 miles)' },
+  hsbc_revolution: { minPts: 30000, stepPts: 6,     fee: 'Free',    feeNote: 'no fee',                rule: '10,000-mile minimum, then 2-mile steps' },
+  uob:             { minPts: 5000,  stepPts: 5000,  fee: 'S$27',    feeNote: 'S$27 per transfer',     rule: '5,000 UNI$ blocks (10,000 miles)' },
+};
+
+// How each program's expiry works
+//  cycle — every point expires on one date (Citi Rewards: 5-year cycle from card approval/renewal)
+//  batch — points expire in rolling batches; track the next batch the bank's app shows
+const EXPIRY_MODEL = { citi_rewards: 'cycle', hsbc_revolution: 'batch', uob: 'batch', krisflyer: 'batch' };
+const EXPIRY_HINT = {
+  citi_rewards:    "All your Citi Rewards points expire together at the end of a 5-year cycle. The Citi app doesn't show this date — ask via Live Chat or customer service once.",
+  hsbc_revolution: 'HSBC app → Cards → Redeem your points → Show points history. Enter the next batch shown.',
+  uob:             'UOB TMRW → Rewards+ → My rewards → UNI$. Enter the next batch shown.',
+  krisflyer:       'KrisFlyer miles expire 36 months after they\'re credited. Your KrisFlyer account shows the next batch.',
+};
+
+// Economy Saver, one-way per person from Singapore.
+// Source: Singapore Airlines one-way Saver award chart effective 1 Nov 2025.
+const SAVER_ECONOMY = [
+  { key: 'z2', label: 'Malaysia & Indonesia',              miles: 8000  },
+  { key: 'z3', label: 'Thailand, Vietnam & Philippines',   miles: 13000 },
+  { key: 'z4', label: 'Hong Kong, Taiwan & South China',   miles: 15500 },
+  { key: 'z6', label: 'South Asia',                        miles: 19000 },
+  { key: 'z5', label: 'Beijing & Shanghai',                miles: 20500 },
+  { key: 'z8', label: 'Perth & Darwin',                    miles: 20500 },
+  { key: 'z7', label: 'Japan & South Korea',               miles: 25500 },
+  { key: 'z9', label: 'Australia (east) & New Zealand',    miles: 29000 },
+];
 
 // ═══════════════════════════════════════════════════════════
 // DATA LAYER
@@ -1158,6 +1372,7 @@ function defaultCard() {
     expiry: null, statement_day: null,
     due_day: null,     // day of month the payment is due (1–31)
     paid_for: null,    // 'YYYY-MM-DD' of the statement that has been paid
+    expiry_points: null, // size of the next expiring batch (batch-model programs)
     last_updated: null
   };
 }
@@ -1179,10 +1394,13 @@ function getInitialData() {
     cards: {
       citi_rewards:    defaultCard(),
       hsbc_revolution: defaultCard(),
-      uob:             defaultCard()
+      uob:             defaultCard(),
+      krisflyer:       defaultCard()
     },
+    transfers: [],
+    goal: null,
     onboarding_complete: false,
-    app_version: '2.2'
+    app_version: '2.3'
   };
 }
 
@@ -1226,6 +1444,7 @@ function migrateData(data) {
   Object.keys(data.cards).forEach(id => {
     const c = data.cards[id];
     if (c.due_day === undefined) c.due_day = null;
+    if (c.expiry_points === undefined) c.expiry_points = null;
     if (c.paid_for === undefined) {
       c.paid_for = null;
       // v2.0 stored a "paid this calendar month" flag — carry it over to the latest statement
@@ -1236,7 +1455,9 @@ function migrateData(data) {
     delete c.payment_status;
     delete c.payment_cycle;
   });
-  data.app_version = '2.2';
+  if (!Array.isArray(data.transfers)) data.transfers = [];
+  if (data.goal === undefined) data.goal = null;
+  data.app_version = '2.3';
   saveData(data);
 }
 
@@ -1251,6 +1472,29 @@ function calcMiles(cardId) {
 
 function calcTotalMiles() {
   return cardIds.reduce((sum, id) => sum + (calcMiles(id) || 0), 0);
+}
+
+// What you could move to KrisFlyer today, respecting minimums and block sizes
+function getTransferable(cardId) {
+  const r = TRANSFER_RULES[cardId];
+  const pts = appData.cards[cardId].points || 0;
+  if (!r || pts < r.minPts) return { points: 0, miles: 0, leftover: pts, needed: r ? r.minPts - pts : 0 };
+  const usable = Math.floor(pts / r.stepPts) * r.stepPts;
+  return { points: usable, miles: CONVERSION[cardId](usable), leftover: pts - usable, needed: 0 };
+}
+
+// Miles you could book with today: transferable bank points + miles already in KrisFlyer
+function calcUsableMiles() {
+  return BANK_IDS.reduce((sum, id) => sum + getTransferable(id).miles, 0) + (appData.cards.krisflyer.points || 0);
+}
+
+// Points at risk on the next expiry date. null = unknown batch size.
+function getAtRisk(cardId) {
+  const c = appData.cards[cardId];
+  if (!c.expiry || c.points === null) return null;
+  if (EXPIRY_MODEL[cardId] === 'cycle') return c.points;
+  if (c.expiry_points === null) return null;
+  return Math.min(c.expiry_points, c.points);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1289,6 +1533,9 @@ function daysSince(dateStr) {
 function formatDate(dateStr) {
   if (!dateStr) return '';
   return parseLocalDate(dateStr).toLocaleDateString('en-SG', { month: 'short', year: 'numeric' });
+}
+function formatFullDate(dateStr) {
+  return parseLocalDate(dateStr).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 function formatDayMonth(d) {
   return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' });
@@ -1377,7 +1624,7 @@ function getBalanceState(cardId) {
 
 function getMonthTasks() {
   const tasks = [];
-  cardIds.forEach(id => {
+  BANK_IDS.forEach(id => {
     tasks.push({ id, kind: 'balance', done: getBalanceState(id).current });
     tasks.push({ id, kind: 'payment', done: getPaymentState(id).state === 'paid' });
   });
@@ -1389,13 +1636,43 @@ function getMonthTasks() {
 // ═══════════════════════════════════════════════════════════
 function getExpiryState(cardId) {
   const c = appData.cards[cardId];
-  if (!c.expiry) return { cls: 'exp-grey', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(241,245,249,0.45)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2m0 18v-2m8.66-9H20M4 12H2"/></svg>', text: 'Set expiry date' };
+  const unit = CARD_META[cardId].ptsLabel;
+  const cycle = EXPIRY_MODEL[cardId] === 'cycle';
+  const icons = {
+    grey:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.45)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+    red:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B42318" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+    amber: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8A5A00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    green: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a7a50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  };
+  const label = cycle ? 'Points cycle ends' : 'Next expiring batch';
+  if (!c.expiry) return { cls: 'exp-grey', icon: icons.grey, label, text: cycle ? 'Add the cycle end date' : 'Add the next batch' };
 
   const days = daysUntil(c.expiry);
-  if (days < 0) return { cls: 'exp-red', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>', text: 'Points expired!' };
-  if (days < 30)  return { cls: 'exp-red',   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>', text: `Expires in ${days}d — convert now` };
-  if (days < 90)  return { cls: 'exp-amber', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', text: `Expires in ${days}d — act soon` };
-  return { cls: 'exp-green', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2DD4A0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>', text: `Expires ${formatDate(c.expiry)}` };
+  const risk = getAtRisk(cardId);
+  const what = cycle ? 'All points' : (risk !== null ? `${formatNum(risk)} ${unit}` : 'Some points');
+  if (days < 0)  return { cls: 'exp-red',   icon: icons.red,   label, text: 'Date has passed — update it' };
+  if (days < 30) return { cls: 'exp-red',   icon: icons.red,   label, text: `${what} expire in ${days}d` };
+  if (days < 90) return { cls: 'exp-amber', icon: icons.amber, label, text: `${what} expire in ${days}d` };
+  return { cls: 'exp-green', icon: icons.green, label, text: `${what} · ${formatFullDate(c.expiry)}` };
+}
+
+// One sentence for the nudge bar about what's expiring and what to do
+function expiryNudgeText(id, days) {
+  const meta = CARD_META[id], risk = getAtRisk(id);
+  const when = days === 0 ? 'today' : `in ${days} day${days === 1 ? '' : 's'}`;
+  if (id === 'krisflyer') {
+    return `${risk !== null ? formatNum(risk) + ' KrisFlyer miles' : 'Some KrisFlyer miles'} expire ${when} — book or use them`;
+  }
+  const t = getTransferable(id), r = TRANSFER_RULES[id];
+  if (EXPIRY_MODEL[id] === 'cycle') {
+    return t.miles
+      ? `All ${meta.short} points expire ${when} — transfer ${formatNum(t.miles)} miles in one go (${r.feeNote})`
+      : `All ${meta.short} points expire ${when}, and you're below the transfer minimum`;
+  }
+  const riskMiles = risk !== null ? CONVERSION[id](risk) : null;
+  const head = risk !== null ? `${formatNum(risk)} ${meta.ptsLabel} (${formatNum(riskMiles)} miles)` : `Some ${meta.short} points`;
+  return t.miles ? `${head} expire ${when} — a transfer now is ${r.feeNote === 'no fee' ? 'free' : r.feeNote}`
+                 : `${head} expire ${when} — you're ${formatNum(t.needed)} ${meta.ptsLabel} short of the transfer minimum`;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1418,9 +1695,7 @@ function computeNudge() {
     if (c.expiry) {
       const days = daysUntil(c.expiry);
       if (days >= 0 && days < 30) {
-        const miles = calcMiles(id);
-        const extra = miles ? ` You have ${formatNum(miles)} KF miles to convert.` : '';
-        return { cls: 'nudge-red', cardId: id, text: `${cardNames[id]} points expire in ${days} days.${extra}` };
+        return { cls: 'nudge-red', cardId: id, text: expiryNudgeText(id, days) };
       }
     }
   }
@@ -1440,7 +1715,7 @@ function computeNudge() {
     if (c.expiry) {
       const days = daysUntil(c.expiry);
       if (days >= 30 && days < 90) {
-        return { cls: 'nudge-amber', cardId: id, text: `${cardNames[id]} points expire in ${days} days — plan your conversion` };
+        return { cls: 'nudge-amber', cardId: id, text: expiryNudgeText(id, days) };
       }
     }
   }
@@ -1453,12 +1728,6 @@ function computeNudge() {
         return { cls: 'nudge-info', cardId: id, text: `${cardNames[id]} hasn't been updated in ${age} days` };
       }
     }
-  }
-  // P6: UOB pool has at least one full transfer block (5,000 UNI$ = 10,000 miles)
-  const unis = appData.cards.uob.points || 0;
-  if (unis >= 5000) {
-    const blocks = Math.floor(unis / 5000);
-    return { cls: 'nudge-info', cardId: 'uob', text: `UOB pool can transfer ${formatNum(blocks * 10000)} KrisFlyer miles (${blocks} × 5,000 UNI$ block${blocks === 1 ? '' : 's'})` };
   }
 
   return null;
@@ -1498,7 +1767,13 @@ function togglePayment(cardId) {
 let _expiryTarget = null;
 function openExpiryModal(cardId) {
   _expiryTarget = cardId;
-  document.getElementById('expiry-modal-title').textContent = `${CARD_META[cardId].short} — points expiry`;
+  const cycle = EXPIRY_MODEL[cardId] === 'cycle', meta = CARD_META[cardId];
+  document.getElementById('expiry-modal-title').textContent = `${meta.short} — ${cycle ? 'points cycle' : 'next expiring batch'}`;
+  document.getElementById('expiry-modal-sub').textContent = EXPIRY_HINT[cardId];
+  document.getElementById('expiry-date-label').textContent = cycle ? 'Cycle end date' : 'Expiry date';
+  document.getElementById('expiry-amount-field').style.display = cycle ? 'none' : '';
+  document.getElementById('expiry-amount-label').textContent = `${meta.ptsLabel} expiring on that date`;
+  document.getElementById('expiry-amount-input').value = appData.cards[cardId].expiry_points ?? '';
   const c = appData.cards[cardId];
   document.getElementById('expiry-date-input').value = c.expiry || '';
   openModal('expiry-modal');
@@ -1506,7 +1781,10 @@ function openExpiryModal(cardId) {
 function saveExpiry() {
   if (!_expiryTarget) return;
   const val = document.getElementById('expiry-date-input').value;
+  const amtDigits = document.getElementById('expiry-amount-input').value.replace(/[^\d]/g, '');
   appData.cards[_expiryTarget].expiry = val || null;
+  appData.cards[_expiryTarget].expiry_points =
+    (EXPIRY_MODEL[_expiryTarget] === 'batch' && val && amtDigits) ? parseInt(amtDigits, 10) : null;
   saveData(appData);
   renderAll();
   closeModal('expiry-modal');
@@ -1888,7 +2166,7 @@ function getPointsHistory(cardId) {
   return months;
 }
 
-function updatePoints(cardId, points) {
+function updatePoints(cardId, points, render = true) {
   const c = appData.cards[cardId];
   c.points_prev  = c.points;
   c.points       = points;
@@ -1898,7 +2176,7 @@ function updatePoints(cardId, points) {
   if (!appData.history[cardId]) appData.history[cardId] = {};
   appData.history[cardId][monthKey()] = points;
   saveData(appData);
-  renderAll();
+  if (render) renderAll();
 }
 
 async function handleFile(event, cardId) {
@@ -1932,7 +2210,7 @@ async function handleFile(event, cardId) {
 
 // Front-of-card and checklist "Update" action
 function quickUpdate(cardId) {
-  if (cardId === 'hsbc_revolution') openPointsSheet(cardId);
+  if (cardId === 'hsbc_revolution' || cardId === 'krisflyer') openPointsSheet(cardId);
   else triggerUpload(cardId);
 }
 
@@ -1973,6 +2251,177 @@ function savePointsSheet() {
 document.getElementById('points-input').addEventListener('input', updatePointsPreview);
 document.getElementById('points-input').addEventListener('keydown', e => { if (e.key === 'Enter') savePointsSheet(); });
 
+// ═══ Log a transfer to KrisFlyer ═══
+let _transferFrom = null;
+function endOfMonthPlus(months) {          // last day of the month, `months` from now
+  const t = today();
+  return toISO(new Date(t.getFullYear(), t.getMonth() + months + 1, 0));
+}
+function openTransferSheet(cardId) {
+  _transferFrom = cardId;
+  const meta = CARD_META[cardId], r = TRANSFER_RULES[cardId], t = getTransferable(cardId);
+  document.getElementById('transfer-modal-title').textContent = `Log a transfer from ${meta.short}`;
+  document.getElementById('transfer-modal-sub').textContent =
+    `Log it once you've submitted the transfer with ${meta.short}. ${r.rule}; ${r.feeNote}.`;
+  document.getElementById('transfer-modal-label').textContent = `${meta.ptsLabel} transferred`;
+  document.getElementById('transfer-input').value = t.points ? formatNum(t.points) : '';
+  updateTransferPreview();
+  openModal('transfer-modal');
+}
+function readTransferInput() {
+  const d = document.getElementById('transfer-input').value.replace(/[^\d]/g, '');
+  return d === '' ? null : parseInt(d, 10);
+}
+function updateTransferPreview() {
+  const v = readTransferInput(), el = document.getElementById('transfer-preview');
+  if (v === null || !_transferFrom) { el.textContent = ''; return; }
+  el.textContent = `= ${formatNum(CONVERSION[_transferFrom](v))} KrisFlyer miles`;
+}
+function saveTransfer() {
+  const id = _transferFrom, pts = readTransferInput();
+  const bank = appData.cards[id], kf = appData.cards.krisflyer;
+  if (!pts) { showToast('Enter the points you transferred'); return; }
+  if (pts > (bank.points || 0)) { showToast(`That's more than your ${CARD_META[id].short} balance`); return; }
+  const miles = CONVERSION[id](pts);
+  updatePoints(id, (bank.points || 0) - pts, false);
+  updatePoints('krisflyer', (kf.points || 0) + miles, false);
+  // New miles expire 36 months after they're credited; only fills in the date if none is set,
+  // because an existing next-expiring batch will always come first.
+  if (!kf.expiry) { kf.expiry = endOfMonthPlus(36); kf.expiry_points = miles; }
+  appData.transfers.push({ date: todayStr(), from: id, points: pts, miles });
+  saveData(appData);
+  closeModal('transfer-modal');
+  renderAll();
+  flashCard('krisflyer', true);
+  showToast(`Logged · ${formatNum(miles)} miles to KrisFlyer`);
+}
+document.getElementById('transfer-input').addEventListener('input', updateTransferPreview);
+document.getElementById('transfer-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveTransfer(); });
+
+// ═══ Trip goal ═══
+// Average monthly growth in total miles value, from saved history (last 6 months max)
+function monthlyPace() {
+  const hist = appData.history || {};
+  const keys = [...new Set(cardIds.flatMap(id => Object.keys(hist[id] || {})))].sort();
+  if (keys.length < 2) return null;
+  const last = {};
+  const totals = keys.map(k => {
+    cardIds.forEach(id => { const v = (hist[id] || {})[k]; if (v !== undefined) last[id] = v; });
+    return cardIds.reduce((sum, id) => sum + (last[id] !== undefined ? CONVERSION[id](last[id]) : 0), 0);
+  });
+  const n = Math.min(6, keys.length - 1);
+  const [y1, m1] = keys[keys.length - 1 - n].split('-').map(Number);
+  const [y2, m2] = keys[keys.length - 1].split('-').map(Number);
+  const months = (y2 - y1) * 12 + (m2 - m1);
+  if (months < 1) return null;
+  const pace = (totals[totals.length - 1] - totals[totals.length - 1 - n]) / months;
+  return pace > 0 ? pace : null;
+}
+function goalProgress() {
+  const g = appData.goal;
+  if (!g || !g.miles) return null;
+  const have = calcUsableMiles();
+  const pct = Math.min(100, Math.floor(have / g.miles * 100));
+  const remaining = Math.max(0, g.miles - have);
+  let eta = null;
+  if (remaining > 0) {
+    const pace = monthlyPace();
+    if (pace) {
+      const t = today();
+      eta = new Date(t.getFullYear(), t.getMonth() + Math.ceil(remaining / pace), 1);
+    }
+  }
+  return { have, pct, remaining, eta };
+}
+function renderGoal() {
+  const btn = document.getElementById('goal-ring-btn');
+  if (!btn) return;
+  const g = appData.goal, prog = goalProgress();
+  const C = 2 * Math.PI * 25;
+  const fill = document.getElementById('goal-ring-fill');
+  if (!prog) {
+    btn.classList.add('empty');
+    fill.style.strokeDashoffset = C;
+    document.getElementById('goal-ring-pct').textContent = '+';
+    document.getElementById('goal-ring-label').textContent = 'Set a trip goal';
+    document.getElementById('goal-ring-meta').textContent = '';
+    btn.setAttribute('aria-label', 'Set a trip goal');
+    return;
+  }
+  btn.classList.remove('empty');
+  btn.classList.toggle('done', prog.pct >= 100);
+  fill.style.strokeDashoffset = C * (1 - prog.pct / 100);
+  document.getElementById('goal-ring-pct').textContent = `${prog.pct}%`;
+  document.getElementById('goal-ring-label').textContent = g.short || 'Trip goal';
+  document.getElementById('goal-ring-meta').textContent = prog.remaining === 0 ? 'Ready to book'
+    : prog.eta ? `~${prog.eta.toLocaleDateString('en-SG', { month: 'short', year: 'numeric' })}`
+    : `${formatNum(prog.remaining)} to go`;
+  btn.setAttribute('aria-label', `Trip goal ${g.label}: ${prog.pct}% there`);
+}
+
+let _goalTrip = 'return';
+function openGoalSheet() {
+  const g = appData.goal;
+  const sel = document.getElementById('goal-zone');
+  sel.innerHTML = SAVER_ECONOMY.map(z => `<option value="${z.key}">${z.label} · ${formatNum(z.miles)}</option>`).join('')
+    + '<option value="custom">Custom amount</option>';
+  sel.value = g ? (g.zone || 'custom') : 'z7';
+  _goalTrip = g ? g.trip : 'return';
+  document.getElementById('goal-pax').value = g ? g.pax : 1;
+  document.getElementById('goal-custom').value = g && g.zone === 'custom' ? formatNum(g.miles) : '';
+  document.getElementById('goal-remove').style.display = g ? '' : 'none';
+  syncGoalSheet();
+  openModal('goal-modal');
+}
+function setGoalTrip(trip) { _goalTrip = trip; syncGoalSheet(); }
+function computeGoal() {
+  const zone = document.getElementById('goal-zone').value;
+  const pax = Math.max(1, parseInt(document.getElementById('goal-pax').value, 10) || 1);
+  if (zone === 'custom') {
+    const d = document.getElementById('goal-custom').value.replace(/[^\d]/g, '');
+    const miles = d ? parseInt(d, 10) : 0;
+    return { zone, trip: _goalTrip, pax, miles, label: `Custom · ${formatNum(miles)} miles`, short: 'Custom goal' };
+  }
+  const z = SAVER_ECONOMY.find(x => x.key === zone);
+  const miles = z.miles * (_goalTrip === 'return' ? 2 : 1) * pax;
+  const who = pax === 1 ? '' : ` · ${pax} people`;
+  return { zone, trip: _goalTrip, pax, miles,
+           label: `${z.label}, ${_goalTrip === 'return' ? 'return' : 'one-way'}${who}`,
+           short: z.label.split(/,| & /)[0] };
+}
+function syncGoalSheet() {
+  const zone = document.getElementById('goal-zone').value;
+  document.getElementById('goal-custom-field').style.display = zone === 'custom' ? '' : 'none';
+  document.getElementById('goal-trip-field').style.display = zone === 'custom' ? 'none' : '';
+  document.getElementById('goal-pax-field').style.display = zone === 'custom' ? 'none' : '';
+  document.querySelectorAll('#goal-trip-field .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.trip === _goalTrip));
+  const g = computeGoal(), have = calcUsableMiles();
+  document.getElementById('goal-total').textContent = g.miles ? `${formatNum(g.miles)} miles` : '—';
+  document.getElementById('goal-have').textContent = g.miles
+    ? (have >= g.miles ? `You can cover this now with ${formatNum(have)} usable miles.` : `You have ${formatNum(have)} usable now — ${formatNum(g.miles - have)} to go.`)
+    : '';
+}
+function saveGoal() {
+  const g = computeGoal();
+  if (!g.miles) { showToast('Enter the miles you need'); return; }
+  appData.goal = g;
+  saveData(appData);
+  closeModal('goal-modal');
+  renderAll();
+  showToast('Goal saved');
+}
+function removeGoal() {
+  appData.goal = null;
+  saveData(appData);
+  closeModal('goal-modal');
+  renderAll();
+  showToast('Goal removed');
+}
+['goal-zone', 'goal-pax', 'goal-custom'].forEach(id => {
+  document.getElementById(id).addEventListener('input', syncGoalSheet);
+  document.getElementById(id).addEventListener('change', syncGoalSheet);
+});
+
 // ═══ "This month" checklist sheet ═══
 function openMonthSheet() {
   renderMonthSheet();
@@ -1990,7 +2439,7 @@ function renderMonthSheet() {
   document.getElementById('month-progress-fill').style.width = `${Math.round(done / tasks.length * 100)}%`;
 
   const check = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#050C14" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-  list.innerHTML = cardIds.map(id => {
+  list.innerHTML = BANK_IDS.map(id => {
     const meta = CARD_META[id], c = appData.cards[id];
     const bal = getBalanceState(id), ps = getPaymentState(id);
     const miles = calcMiles(id);
@@ -2081,6 +2530,7 @@ function switchTab(name, btn) {
   } else if (name === 'history') {
     historyPage.classList.add('active');
     renderHistoryRows();
+    renderTransferList();
     drawGraph();
   } else if (name === 'settings') {
     settingsPage.classList.add('active');
@@ -2146,6 +2596,8 @@ const CARD_META = {
                      manualHint:'Copy the Reward Points balance from the HSBC app.' },
   uob:             { name:"UOB Preferred Platinum + Lady's", short:'UOB',             ptsLabel:'UNI$',            rate:'1 UNI$ → 2 KrisFlyer miles', uploadLabel:'Upload combined UOB statement',
                      manualHint:'Copy the combined UNI$ balance from the UOB app or your statement.' },
+  krisflyer:       { name:'KrisFlyer',                      short:'KrisFlyer',       ptsLabel:'Miles',           rate:'Ready to book',              uploadLabel:null,
+                     manualHint:'Copy your balance from the KrisFlyer app or singaporeair.com.' },
 };
 
 function renderCardBack(cardId) {
@@ -2171,6 +2623,30 @@ function renderCardBack(cardId) {
   }
   uploadHTML += `<button class="back-upload-btn ${meta.uploadLabel ? 'secondary' : ''}" onclick="event.stopPropagation();openPointsSheet('${cardId}')">${editIcon} Enter balance</button>`;
 
+  const isBank = BANK_IDS.includes(cardId);
+  let transferHTML = '';
+  if (isBank) {
+    const t = getTransferable(cardId), r = TRANSFER_RULES[cardId];
+    if (t.miles > 0) {
+      transferHTML = `<div class="back-row transfer-ready">
+        <div class="back-row-left">
+          <span class="back-row-label">Transferable now · ${r.fee}</span>
+          <span class="back-row-value">${formatNum(t.miles)} miles</span>
+          <span class="back-row-note">${t.leftover ? formatNum(t.leftover) + ' ' + meta.ptsLabel + ' left over · ' : ''}${r.rule}</span>
+        </div>
+        <button class="back-edit-btn" onclick="event.stopPropagation();openTransferSheet('${cardId}')">Log transfer</button>
+      </div>`;
+    } else if (c.points !== null) {
+      transferHTML = `<div class="back-row" style="cursor:default">
+        <div class="back-row-left">
+          <span class="back-row-label">Transfer minimum</span>
+          <span class="back-row-value">${formatNum(t.needed)} more ${meta.ptsLabel} to go</span>
+          <span class="back-row-note">${r.rule}</span>
+        </div>
+      </div>`;
+    }
+  }
+
   body.innerHTML = `
     <div class="back-row" style="cursor:default">
       <div class="back-row-left">
@@ -2178,26 +2654,27 @@ function renderCardBack(cardId) {
         <span class="back-row-value">${c.points !== null ? formatNum(c.points) : '—'}</span>
         ${deltaHtml}
       </div>
-      <div style="text-align:right">
-        <div style="font-size:9px;font-weight:600;letter-spacing:0.10em;text-transform:uppercase;color:var(--text-3);margin-bottom:2px">Miles</div>
-        <div style="font-size:18px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums">${miles !== null ? formatNum(miles) : '—'}</div>
-      </div>
+      ${cardId === 'krisflyer' ? '' : `<div style="text-align:right">
+        <div style="font-size:9px;font-weight:600;letter-spacing:0.10em;text-transform:uppercase;color:rgba(0,0,0,0.45);margin-bottom:2px">Miles</div>
+        <div style="font-size:18px;font-weight:800;color:rgba(0,90,55,0.92);font-variant-numeric:tabular-nums">${miles !== null ? formatNum(miles) : '—'}</div>
+      </div>`}
     </div>
-    <div class="back-row ${ps.state}" id="back-payment-${cardId}" onclick="event.stopPropagation();togglePayment('${cardId}')">
+    ${transferHTML}
+    ${isBank ? `<div class="back-row ${ps.state}" id="back-payment-${cardId}" onclick="event.stopPropagation();togglePayment('${cardId}')">
       <div class="back-row-left">
         <span class="back-row-label">Payment</span>
         <span class="back-row-value" id="back-payment-text-${cardId}">${ps.label}</span>
       </div>
       <div class="toggle-sw" id="back-toggle-${cardId}"></div>
-    </div>
+    </div>` : ''}
     <div class="back-row ${exp.cls}" id="back-expiry-${cardId}" onclick="event.stopPropagation();openExpiryModal('${cardId}')">
       <div class="back-row-left">
-        <span class="back-row-label">Points Expiry</span>
+        <span class="back-row-label">${exp.label}</span>
         <span class="back-row-value" id="back-expiry-text-${cardId}">${exp.text}</span>
       </div>
       <span style="width:18px;height:18px;flex-shrink:0">${exp.icon}</span>
     </div>
-    <div class="back-row" style="cursor:default">
+    ${isBank ? `<div class="back-row" style="cursor:default">
       <div class="back-row-left">
         <span class="back-row-label">Billing Dates</span>
         <span class="back-row-value" id="back-stmt-${cardId}">${stmtText}</span>
@@ -2206,7 +2683,7 @@ function renderCardBack(cardId) {
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         Edit
       </button>
-    </div>
+    </div>` : ''}
     ${uploadHTML}
     <div class="back-parse-result" id="back-parse-${cardId}"></div>`;
 }
@@ -2223,7 +2700,7 @@ function renderAll() {
   const hasAnyData = cardIds.some(id => appData.cards[id].points !== null);
   if (hasAnyData) {
     animateHero(total);
-    document.getElementById('hero-sub').textContent = total > 0 ? 'across all cards' : 'Upload statements to get started';
+    document.getElementById('hero-sub').textContent = total > 0 ? `${formatNum(calcUsableMiles())} usable now` : 'Upload statements to get started';
   } else {
     document.getElementById('hero-miles').textContent = '—';
     document.getElementById('hero-sub').textContent = 'Upload your statements to get started';
@@ -2252,10 +2729,15 @@ function renderAll() {
   cardIds.forEach(id => {
     const c = appData.cards[id], miles = calcMiles(id);
     document.getElementById('card-pts-'+id).textContent   = c.points !== null ? formatNum(c.points) : '—';
-    document.getElementById('card-miles-'+id).textContent = miles !== null ? formatNum(miles) : '—';
+    if (id === 'krisflyer') {
+      document.getElementById('card-miles-'+id).textContent = c.expiry ? formatFullDate(c.expiry) : '—';
+    } else {
+      document.getElementById('card-miles-'+id).textContent = miles !== null ? formatNum(miles) : '—';
+    }
     updateFrontButton(id);
   });
   if (document.getElementById('month-modal').classList.contains('open')) renderMonthSheet();
+  renderGoal();
   // Re-render open backs
   _flippedCards.forEach(id => renderCardBack(id));
 }
@@ -2293,7 +2775,7 @@ function updateFrontButton(cardId) {
   const current = getBalanceState(cardId).current;
   const icon = current
     ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
-    : cardId === 'hsbc_revolution'
+    : (cardId === 'hsbc_revolution' || cardId === 'krisflyer')
       ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>'
       : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
   btn.classList.toggle('is-current', current);
@@ -2326,9 +2808,27 @@ function renderHistoryRows() {
   }).join('');
 }
 
+function renderTransferList() {
+  const el = document.getElementById('transfer-list');
+  if (!el) return;
+  const list = (appData.transfers || []).slice(-10).reverse();
+  el.innerHTML = list.length ? list.map(t => `<div class="history-card-row">
+      <div>
+        <div class="history-card-name">${CARD_META[t.from].short} → KrisFlyer</div>
+        <div class="history-card-pts">${formatNum(t.points)} ${CARD_META[t.from].ptsLabel}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="history-card-miles">+${formatNum(t.miles)}</div>
+        <div class="history-card-updated">${formatFullDate(t.date)}</div>
+      </div>
+    </div>`).join('')
+    : '<div class="transfer-empty">No transfers logged yet. Use “Log transfer” on a card after you convert points.</div>';
+}
+
 function getGraphColor(id) {
   if (id==='citi_rewards')    return '#E5484D';
   if (id==='hsbc_revolution') return '#DB2777';
+  if (id==='krisflyer')       return '#C9A94E';
   return '#3B82F6'; // UOB
 }
 
