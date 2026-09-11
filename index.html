@@ -726,6 +726,15 @@ body {
 .modal-btn-primary   { flex: 1; padding: 15px; border-radius: 12px; background: var(--accent); color: #050C14; font-size: 15px; font-weight: 700; border: none; cursor: pointer; min-height: 52px; font-family: inherit; }
 .modal-btn-secondary { padding: 15px 18px; border-radius: 12px; background: var(--surface2); color: var(--text-2); font-size: 15px; font-weight: 600; border: 1px solid var(--border); cursor: pointer; font-family: inherit; }
 
+/* ── Checkbox row in sheets ── */
+.check-row {
+  display: flex; align-items: flex-start; gap: 12px; cursor: pointer;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px; margin: 0 0 14px; font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--text);
+}
+.check-row[hidden] { display: none; }
+.check-row input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--accent); flex-shrink: 0; }
+
 /* ── MANUAL BALANCE SHEET ── */
 .modal-sub.is-error { color: #F0A0A0; }
 .points-preview { font-size: 13px; font-weight: 600; color: var(--accent); margin-top: 8px; min-height: 18px; font-variant-numeric: tabular-nums; }
@@ -909,6 +918,10 @@ input[type=file] { display: none; }
       <label class="modal-label" for="dueday-input">Payment due day (1–31)</label>
       <input type="number" inputmode="numeric" class="modal-input" id="dueday-input" min="1" max="31" placeholder="e.g. 8">
     </div>
+    <label class="check-row" id="stmt-paid-field" hidden>
+      <input type="checkbox" id="stmt-paid-check" checked>
+      <span id="stmt-paid-text"></span>
+    </label>
     <div class="modal-actions">
       <button class="modal-btn-secondary" onclick="closeModal('stmtday-modal')">Cancel</button>
       <button class="modal-btn-primary"   onclick="saveStmtDay()">Save</button>
@@ -1604,6 +1617,7 @@ function getPaymentState(cardId) {
 
   const stmt    = latestStatementDate(c.statement_day);
   const stmtKey = toISO(stmt);
+  const stmtText = formatDayMonth(stmt);
   if (c.paid_for === stmtKey) {
     const next = formatDayMonth(nextStatementDate(c.statement_day));
     return { state: 'paid', stmtKey, label: `Paid · next statement ${next}`, short: `Paid · next statement ${next}` };
@@ -1614,13 +1628,13 @@ function getPaymentState(cardId) {
   const dueText  = formatDayMonth(due.date);
 
   if (due.estimated) {
-    if (daysLeft < 0) return { state: 'due-soon', stmtKey, daysLeft, label: 'Unpaid · set a due day for exact reminders', short: 'Unpaid · due day not set' };
-    return { state: 'upcoming', stmtKey, daysLeft, label: `Likely due ~${dueText} · tap when paid`, short: `Likely due ~${dueText}` };
+    if (daysLeft < 0) return { state: 'due-soon', stmtKey, stmtText, daysLeft, label: 'Unpaid · set a due day for exact reminders', short: 'Unpaid · due day not set' };
+    return { state: 'upcoming', stmtKey, stmtText, daysLeft, label: `Likely due ~${dueText} · tap when paid`, short: `Likely due ~${dueText}` };
   }
-  if (daysLeft < 0)   return { state: 'overdue',  stmtKey, daysLeft, label: `Overdue · was due ${dueText}`, short: `Overdue · was due ${dueText}` };
-  if (daysLeft === 0) return { state: 'due-soon', stmtKey, daysLeft, label: 'Due today · tap when paid', short: 'Due today' };
-  if (daysLeft <= 5)  return { state: 'due-soon', stmtKey, daysLeft, label: `Due in ${daysLeft}d (${dueText}) · tap when paid`, short: `Due in ${daysLeft}d · ${dueText}` };
-  return { state: 'upcoming', stmtKey, daysLeft, label: `Due ${dueText} · tap when paid`, short: `Due ${dueText}` };
+  if (daysLeft < 0)   return { state: 'overdue',  stmtKey, stmtText, daysLeft, label: `Overdue · was due ${dueText}`, short: `Overdue · was due ${dueText}` };
+  if (daysLeft === 0) return { state: 'due-soon', stmtKey, stmtText, daysLeft, label: 'Due today · tap when paid', short: 'Due today' };
+  if (daysLeft <= 5)  return { state: 'due-soon', stmtKey, stmtText, daysLeft, label: `Due in ${daysLeft}d (${dueText}) · tap when paid`, short: `Due in ${daysLeft}d · ${dueText}` };
+  return { state: 'upcoming', stmtKey, stmtText, daysLeft, label: `Due ${dueText} · tap when paid`, short: `Due ${dueText}` };
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1705,7 +1719,8 @@ function computeNudge() {
   for (const id of cards) {
     const ps = getPaymentState(id);
     if (ps.state === 'overdue') {
-      return { cls: 'nudge-red', cardId: id, text: `${cardNames[id]} payment is overdue — it was due ${formatDayMonth(dueDateFor(parseLocalDate(ps.stmtKey), appData.cards[id].due_day).date)}` };
+      const dueText = formatDayMonth(dueDateFor(parseLocalDate(ps.stmtKey), appData.cards[id].due_day).date);
+      return { cls: 'nudge-red', cardId: id, text: `${cardNames[id]}: ${ps.stmtText} statement was due ${dueText} — tap to mark it paid` };
     }
   }
   // P2: points expiring < 30 days
@@ -1816,8 +1831,29 @@ function openStmtDayModal(cardId) {
   document.getElementById('stmtday-modal-sub').textContent = `${CARD_META[cardId].short} — both dates are printed on your statement.`;
   document.getElementById('stmtday-input').value = appData.cards[cardId].statement_day || '';
   document.getElementById('dueday-input').value  = appData.cards[cardId].due_day || '';
+  document.getElementById('stmt-paid-check').checked = true;
+  syncStmtPaidField();
   openModal('stmtday-modal');
 }
+// With these dates, is the latest statement already past its due date and not marked paid?
+// Then ask — it's almost always already paid when you're setting dates up.
+function pastDueStatement(cardId, stmtDay, dueDay) {
+  if (!stmtDay || !dueDay) return null;
+  const stmt = latestStatementDate(stmtDay);
+  const due = dueDateFor(stmt, dueDay).date;
+  if (due >= startOfToday() || appData.cards[cardId].paid_for === toISO(stmt)) return null;
+  return { stmtKey: toISO(stmt), stmtText: formatDayMonth(stmt), dueText: formatDayMonth(due) };
+}
+function syncStmtPaidField() {
+  const st = parseInt(document.getElementById('stmtday-input').value);
+  const du = parseInt(document.getElementById('dueday-input').value);
+  const valid = st >= 1 && st <= 28 && du >= 1 && du <= 31;
+  const pd = valid ? pastDueStatement(_stmtTarget, st, du) : null;
+  document.getElementById('stmt-paid-field').hidden = !pd;
+  if (pd) document.getElementById('stmt-paid-text').textContent =
+    `I've paid the ${pd.stmtText} statement (it was due ${pd.dueText})`;
+}
+['stmtday-input', 'dueday-input'].forEach(id => document.getElementById(id).addEventListener('input', syncStmtPaidField));
 function saveStmtDay() {
   if (!_stmtTarget) return;
   const val = parseInt(document.getElementById('stmtday-input').value);
@@ -1825,8 +1861,10 @@ function saveStmtDay() {
   const dueRaw = document.getElementById('dueday-input').value.trim();
   const due = dueRaw === '' ? null : parseInt(dueRaw);
   if (due !== null && (isNaN(due) || due < 1 || due > 31)) { showToast('Due day must be 1–31'); return; }
+  const pd = pastDueStatement(_stmtTarget, val, due);
   appData.cards[_stmtTarget].statement_day = val;
   appData.cards[_stmtTarget].due_day = due;
+  if (pd && document.getElementById('stmt-paid-check').checked) appData.cards[_stmtTarget].paid_for = pd.stmtKey;
   saveData(appData);
   renderAll();
   closeModal('stmtday-modal');
@@ -2096,6 +2134,8 @@ function obNext() {
   if (expiry)        c.expiry        = expiry;
   if (!isNaN(stmtDay) && stmtDay >= 1 && stmtDay <= 28) c.statement_day = stmtDay;
   if (!isNaN(dueDay)  && dueDay  >= 1 && dueDay  <= 31) c.due_day       = dueDay;
+  const pastDue = pastDueStatement(OB_STEPS[obStep].cardId, c.statement_day, c.due_day);
+  if (pastDue) c.paid_for = pastDue.stmtKey;
   if (!isNaN(pts) && pts >= 0) {
     c.points_prev = c.points;
     c.points      = pts;
@@ -2478,7 +2518,7 @@ function renderMonthSheet() {
       payMeta = ps.short;
     } else {
       payBtn = `<button class="task-btn" onclick="togglePayment('${id}')">Mark paid</button>`;
-      payMeta = ps.short;
+      payMeta = `${ps.short} · ${ps.stmtText} statement`;
       payCls = ps.state === 'overdue' ? 'alert' : ps.state === 'due-soon' ? 'warn' : '';
     }
 
@@ -2503,12 +2543,84 @@ function renderMonthSheet() {
 
 let _modalZ = 200;
 function syncModalState(){document.body.classList.toggle('modal-open',!!document.querySelector('.modal-overlay.open'))}
-function openModal(id){const el=document.getElementById(id);el.style.zIndex=++_modalZ;el.classList.add('open');syncModalState()}
+function openModal(id){
+  const el=document.getElementById(id);
+  el.style.zIndex=++_modalZ;
+  if(el.classList.contains('open'))return;
+  el.classList.add('open');syncModalState();
+  navOpened('modal:'+id);
+}
 
-function closeModal(id){document.getElementById(id).classList.remove('open');syncModalState()}
+// fromBack = true when the Android back button triggered it (history entry already consumed)
+function closeModal(id, fromBack=false){
+  const el=document.getElementById(id);
+  if(!el.classList.contains('open'))return;
+  el.classList.remove('open');syncModalState();
+  if(!fromBack)navClosed('modal:'+id);
+}
 document.querySelectorAll('.modal-overlay').forEach(el=>{
-  el.addEventListener('click',e=>{if(e.target===el){el.classList.remove('open');syncModalState()}});
+  el.addEventListener('click',e=>{if(e.target===el)closeModal(el.id)});
 });
+
+// ═══════════════════════════════════════════════════════════
+// BACK BUTTON
+// Each thing you open — a sheet, a card's back, the History or Settings tab — adds one
+// browser history entry, so Android's back button closes the most recent one instead of
+// leaving the app. At the Cards screen with nothing open, back leaves as usual.
+// The entries are interchangeable placeholders; _navStack records what each one closes.
+// ═══════════════════════════════════════════════════════════
+const _navStack = [];
+let _navSkip = 0;      // history.back() calls we made that haven't landed yet
+let _navPending = 0;   // entries to add once they have (adding one mid-flight would be undone)
+function navOpened(layer) {
+  if (_navStack.includes(layer)) return;
+  _navStack.push(layer);
+  if (_navSkip > 0) _navPending++;
+  else history.pushState({ milesNav: _navStack.length }, '');
+}
+// Closed from inside the app (✕, Save, tapping outside) → quietly consume its history entry
+function navClosed(layer) {
+  const i = _navStack.lastIndexOf(layer);
+  if (i === -1) return;
+  _navStack.splice(i, 1);
+  _navSkip++;
+  history.back();
+}
+// Hand an open entry over to something else without touching history (used by the nudge bar)
+function navRename(from, to) {
+  const i = _navStack.lastIndexOf(from);
+  if (i === -1) return false;
+  if (_navStack.includes(to)) { navClosed(from); return true; }
+  _navStack[i] = to;
+  return true;
+}
+window.addEventListener('popstate', e => {
+  if (_navSkip > 0) {
+    _navSkip--;
+    if (_navSkip === 0) {
+      for (; _navPending > 0; _navPending--) {
+        history.pushState({ milesNav: _navStack.length - _navPending + 1 }, '');
+      }
+    }
+    return;
+  }
+  const layer = _navStack.pop();
+  if (!layer) {
+    // Leftover entry from before a reload — keep stepping back to the app's root
+    if (e.state && e.state.milesNav) history.back();
+    return;
+  }
+  const [kind, id] = layer.split(':');
+  if (kind === 'modal')     closeModal(id, true);
+  else if (kind === 'card') flipToFront(id, true);
+  else if (kind === 'tab')  switchTab('cards', document.getElementById('tab-btn-cards'), true);
+});
+// Reopened onto a leftover entry (e.g. the page reloaded while a sheet was open)
+if (history.state && history.state.milesNav) {
+  const nav = performance.getEntriesByType('navigation')[0];
+  if (nav && nav.type === 'back_forward') history.back();
+  else history.replaceState(null, '');
+}
 
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 function animateHero(target) {
@@ -2531,7 +2643,14 @@ function debugPDF(){document.getElementById('file-debug').click()}
 // TAB SWITCHING — overlay approach
 // ═══════════════════════════════════════════════════════════
 
-function switchTab(name, btn) {
+let _currentTab = 'cards';
+function switchTab(name, btn, fromBack = false) {
+  const prevTab = _currentTab;
+  _currentTab = name;
+  if (!fromBack) {
+    if (prevTab === 'cards' && name !== 'cards') navOpened('tab');
+    else if (prevTab !== 'cards' && name === 'cards') navClosed('tab');
+  }
   // Update tab button active states
   document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.removeAttribute('aria-current'); });
   const _tb = document.getElementById('tab-btn-' + name); if (_tb) _tb.setAttribute('aria-current', 'page');
@@ -2573,13 +2692,20 @@ function flipCard(cardId) {
   const card = document.getElementById('fc-' + cardId);
   if (!card) return;
   if (_flippedCards.has(cardId)) {
-    _flippedCards.delete(cardId);
-    card.classList.remove('flipped');
+    flipToFront(cardId);
   } else {
     _flippedCards.add(cardId);
     card.classList.add('flipped');
     renderCardBack(cardId);
+    navOpened('card:' + cardId);
   }
+}
+function flipToFront(cardId, fromBack = false) {
+  const card = document.getElementById('fc-' + cardId);
+  if (!card || !_flippedCards.has(cardId)) return;
+  _flippedCards.delete(cardId);
+  card.classList.remove('flipped');
+  if (!fromBack) navClosed('card:' + cardId);
 }
 
 document.querySelectorAll('.flip-front').forEach(el => el.addEventListener('keydown', e => {
@@ -2593,11 +2719,13 @@ function openCardBack(cardId) {
   _flippedCards.add(cardId);
   card.classList.add('flipped');
   renderCardBack(cardId);
+  navOpened('card:' + cardId);
 }
 function openNudgeTarget() {
   const cardId = document.getElementById('nudge-bar').dataset.cardId;
   if (!cardId) return;
-  switchTab('cards', document.getElementById('tab-btn-cards'));
+  const reused = navRename('tab', 'card:' + cardId);
+  switchTab('cards', document.getElementById('tab-btn-cards'), reused);
   const idx = cardIds.indexOf(cardId);
   if (idx === _activeIdx) { openCardBack(cardId); return; }
   _goTo(idx);
@@ -2687,6 +2815,7 @@ function renderCardBack(cardId) {
       <div class="back-row-left">
         <span class="back-row-label">Payment</span>
         <span class="back-row-value" id="back-payment-text-${cardId}">${ps.short || ps.label}</span>
+        ${ps.stmtText && ps.state !== 'paid' ? `<span class="back-row-sub">For the ${ps.stmtText} statement · tap when paid</span>` : ''}
       </div>
       <div class="toggle-sw" id="back-toggle-${cardId}" role="switch" aria-checked="${ps.state === 'paid'}" aria-label="Paid"></div>
     </div>` : ''}
@@ -2756,6 +2885,7 @@ function renderAll() {
     nudgeEl.dataset.cardId = nudge.cardId || '';
   } else {
     nudgeEl.dataset.cardId = '';
+    nudgeEl.textContent = '';
     nudgeEl.className = '';
     nudgeEl.style.display = 'none';
   }
@@ -2970,11 +3100,7 @@ function _goTo(idx, animate=true) {
   // Flip the current card back to front before leaving it
   if (idx !== _activeIdx) {
     const leavingId = cardIds[_activeIdx];
-    if (_flippedCards.has(leavingId)) {
-      _flippedCards.delete(leavingId);
-      const el = document.getElementById('fc-' + leavingId);
-      if (el) el.classList.remove('flipped');
-    }
+    if (_flippedCards.has(leavingId)) flipToFront(leavingId);
   }
 
   _activeIdx = idx;
