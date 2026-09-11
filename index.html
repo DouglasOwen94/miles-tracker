@@ -31,7 +31,7 @@
   --blue:        #5B9CF6;
   --text:        #EEF2F8;
   --text-2:      rgba(238,242,248,0.60);
-  --text-3:      rgba(238,242,248,0.32);
+  --text-3:      rgba(238,242,248,0.50);   /* ≥4.5:1 on --bg */
   --citi:        #C04040;
   --hsbc:        #A0308A;
   --uob:         #3A6ED4;
@@ -110,7 +110,7 @@ body {
   padding: 4px 20px 6px;
 }
 .hero-eyebrow {
-  font-size: 10px; font-weight: 500;
+  font-size: 11px; font-weight: 600;
   letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--text-3); margin-bottom: 3px;
 }
@@ -121,7 +121,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 .hero-sub {
-  font-size: 11px; color: var(--text-3);
+  font-size: 12px; color: var(--text-2);
   margin-top: 3px; font-weight: 400;
 }
 
@@ -153,13 +153,16 @@ body {
 .goal-ring.empty .goal-ring-track { stroke-dasharray: 4 5; stroke: var(--border2); }
 .goal-ring.empty .goal-ring-pct { color: var(--text-2); font-size: 20px; font-weight: 500; }
 .goal-ring.done .goal-ring-fill { stroke: #E8C45A; }
-@media (prefers-reduced-motion: reduce) { .goal-ring-fill { transition: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .goal-ring-fill, .flip-inner, #month-progress-fill { transition: none !important; }
+  .back-row.overdue { animation: none; }
+}
 
 /* Nudge bar */
 #nudge-bar {
   margin: 4px 20px 0;
-  padding: 7px 12px 7px 30px;
-  border-radius: 10px; font-size: 12px; font-weight: 500;
+  padding: 8px 12px 8px 32px;
+  border-radius: 10px; font-size: 13px; font-weight: 600;
   line-height: 1.4; display: none; position: relative; flex-shrink: 0;
 }
 #nudge-bar::before {
@@ -169,6 +172,7 @@ body {
   mask-size: contain; mask-repeat: no-repeat; mask-position: center;
 }
 #nudge-bar { cursor: pointer; }
+#nudge-bar { display: none; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 #nudge-bar:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 #nudge-bar.red   { background: rgba(240,96,96,0.08);  color: #F09090; border: 1px solid rgba(240,96,96,0.16); }
 #nudge-bar.amber { background: rgba(232,168,32,0.08); color: #E8BC60; border: 1px solid rgba(232,168,32,0.16); }
@@ -213,7 +217,6 @@ body {
   will-change: transform;
   cursor: grab;
 }
-#cards-list.is-dragging { cursor: grabbing; }
 
 /* ════════════════════════════════════════════
    CREDIT CARD
@@ -311,16 +314,16 @@ body {
 
 /* All text on metal cards is dark (contrast on light metal) */
 .card-bank-name {
-  font-size: 11px; font-weight: 700;
-  color: rgba(0,0,0,0.50);
+  font-size: 12px; font-weight: 700;
+  color: rgba(0,0,0,0.66);
   letter-spacing: 0.10em; text-transform: uppercase;
   position: relative; z-index: 1;
 }
 .card-flip-hint {
   display: flex; align-items: center; gap: 4px;
-  font-size: 9px; font-weight: 600;
+  font-size: 10px; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase;
-  color: rgba(0,0,0,0.28);
+  color: rgba(0,0,0,0.58);
   position: relative; z-index: 1;
 }
 
@@ -337,7 +340,7 @@ body {
 .card-name-big {
   font-size: clamp(26px, 7.5vw, 36px);
   font-weight: 800;
-  color: rgba(0,0,0,0.70);
+  color: rgba(0,0,0,0.76);
   letter-spacing: -0.02em;
   line-height: 1.05;
   text-transform: uppercase;
@@ -349,28 +352,29 @@ body {
   display: flex; align-items: flex-end; justify-content: space-between;
   position: relative; z-index: 1;
 }
-.card-bottom-left { display: flex; flex-direction: column; gap: 6px; }
+.card-bottom-left { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.card-bottom { gap: 10px; }
 .card-stat {
   display: flex; flex-direction: column; gap: 1px;
 }
 .card-stat-label {
-  font-size: 8px; font-weight: 700;
-  letter-spacing: 0.14em; text-transform: uppercase;
-  color: rgba(0,0,0,0.38);
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.10em; text-transform: uppercase;
+  color: rgba(0,0,0,0.68);
 }
 .card-stat-value {
-  font-size: 16px; font-weight: 700;
+  font-size: 18px; font-weight: 800; line-height: 1.15;
   font-variant-numeric: tabular-nums;
-  color: rgba(0,0,0,0.72);
+  color: rgba(0,0,0,0.84);
   letter-spacing: -0.01em;
   text-shadow: 0 1px 0 rgba(255,255,255,0.35);
 }
 .card-stat-value.miles { color: rgba(0,0,0,0.80); }
 .card-rate-pill {
-  font-size: 9px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   padding: 4px 10px; border-radius: 100px;
   background: rgba(0,0,0,0.08);
-  color: rgba(0,0,0,0.42);
+  color: rgba(0,0,0,0.66);
   border: 1px solid rgba(0,0,0,0.12);
   letter-spacing: 0.04em;
   align-self: flex-end;
@@ -382,7 +386,8 @@ body {
 
 /* Card back additions */
 .back-edit-btn { white-space: nowrap; flex-shrink: 0; }
-.back-row-note { font-size: 10px; font-weight: 600; color: rgba(0,0,0,0.50); margin-top: 2px; line-height: 1.35; }
+.back-row-action { grid-column: 1 / -1; justify-content: center; width: 100%; min-height: 42px; }
+.back-row-note { grid-column: 1 / -1; font-size: 12px; font-weight: 600; color: rgba(0,0,0,0.66); line-height: 1.4; }
 .back-row.transfer-ready { background: rgba(52,200,138,0.16); border-color: rgba(26,122,80,0.35); cursor: default; }
 .back-row.transfer-ready .back-row-value { color: rgba(0,90,55,0.92); }
 
@@ -399,8 +404,8 @@ body {
 /* Rate pill now sits under the card name */
 .card-mid .card-rate-pill { display: inline-block; align-self: auto; margin-top: 10px; }
 .card-name-sub {
-  font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
-  color: rgba(0,0,0,0.55); margin-top: 6px;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.01em; line-height: 1.3;
+  color: rgba(0,0,0,0.66); margin-top: 6px;
 }
 
 /* One-tap update on the card front */
@@ -470,19 +475,19 @@ body {
 .card-uob   .flip-back { background: linear-gradient(160deg, #98A8C0 0%, #8898B0 28%, #9C9A98 55%, #B4A888 78%, #C8B8A0 100%); }
 
 .card-back-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 20px 12px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 14px 16px 12px 20px;
   border-bottom: 1px solid rgba(0,0,0,0.10);
   flex-shrink: 0;
   position: relative; z-index: 1;
 }
 .card-back-name {
-  font-size: 13px; font-weight: 700; color: rgba(0,0,0,0.65);
+  font-size: 14px; font-weight: 700; color: rgba(0,0,0,0.80); min-width: 0;
   display: flex; align-items: center; gap: 8px;
   letter-spacing: 0.02em;
 }
 .card-back-close {
-  width: 28px; height: 28px; border-radius: 50%;
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
   background: rgba(0,0,0,0.10); border: 1px solid rgba(0,0,0,0.15);
   display: flex; align-items: center; justify-content: center;
   color: rgba(0,0,0,0.50); cursor: pointer;
@@ -492,35 +497,47 @@ body {
 .card-back-close svg { stroke: rgba(0,0,0,0.50); }
 
 .card-back-body {
-  flex: 1; overflow-y: auto;
-  padding: 10px 14px 14px;
-  display: flex; flex-direction: column; gap: 7px;
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 12px 14px 18px;
+  display: flex; flex-direction: column; gap: 8px;
   scrollbar-width: none;
   position: relative; z-index: 1;
 }
+/* Rows never squash to fit — if there's more than the card can hold, the body scrolls */
+.card-back-body > * { flex-shrink: 0; }
+/* Soft fade at the bottom edge while there's more to scroll to */
+.card-back-body.more-below {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 32px), transparent);
+          mask-image: linear-gradient(to bottom, #000 calc(100% - 32px), transparent);
+}
 .card-back-body::-webkit-scrollbar { display: none; }
 
-/* Settings rows — frosted glass on metal */
+/* Rows — frosted panels on metal. Grid: text | action, with an optional full-width note */
 .back-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 12px; border-radius: 10px;
-  background: rgba(255,255,255,0.32);
-  border: 1px solid rgba(255,255,255,0.55);
-  min-height: 44px;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center; column-gap: 12px; row-gap: 6px;
+  padding: 11px 14px; border-radius: 12px;
+  background: rgba(255,255,255,0.40);
+  border: 1px solid rgba(255,255,255,0.60);
+  min-height: 48px;
 }
-.back-row-left { display: flex; flex-direction: column; gap: 2px; }
-.back-row-label { font-size: 9px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; color: rgba(0,0,0,0.40); }
-.back-row-value { font-size: 13px; font-weight: 700; color: rgba(0,0,0,0.72); }
+.back-row > :only-child { grid-column: 1 / -1; }
+.back-row-left { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.back-row-label { font-size: 10px; line-height: 1.2; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(0,0,0,0.62); }
+.back-row-value { font-size: 14px; line-height: 1.3; font-weight: 700; color: rgba(0,0,0,0.86); overflow-wrap: anywhere; }
+.back-row-sub   { font-size: 12px; line-height: 1.35; font-weight: 600; color: rgba(0,0,0,0.66); }
+.back-delta      { font-size: 12px; font-weight: 700; }
+.back-delta.up   { color: #0B6B43; }
+.back-delta.down { color: #A12626; }
+.back-miles       { text-align: right; }
+.back-miles-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(0,0,0,0.62); margin-bottom: 2px; }
+.back-miles-value { font-size: 20px; font-weight: 800; color: #0B6B43; font-variant-numeric: tabular-nums; line-height: 1.1; }
 
 .back-row.paid    { background: rgba(52,200,138,0.22); border-color: rgba(52,200,138,0.45); }
-.back-row.unpaid  { background: rgba(240,96,96,0.15);  border-color: rgba(240,96,96,0.35); }
 .back-row.overdue { background: rgba(240,96,96,0.22);  border-color: rgba(240,96,96,0.55); animation: pulse-red 2s infinite; }
 .back-row.due-soon { background: rgba(232,168,32,0.18); border-color: rgba(232,168,32,0.40); }
 .back-row.due-soon .back-row-value { color: rgba(140,90,0,0.90); }
 .back-row.paid    .back-row-value { color: rgba(0,100,60,0.85); }
-.back-row.unpaid  .back-row-value,
 .back-row.overdue .back-row-value { color: rgba(160,40,40,0.90); }
 
 .back-row.exp-green { background: rgba(52,200,138,0.18);  border-color: rgba(52,200,138,0.40); }
@@ -531,41 +548,40 @@ body {
 .back-row.exp-red   .back-row-value { color: rgba(160,40,40,0.90); }
 
 .toggle-sw {
-  width: 40px; height: 24px; border-radius: 12px;
+  width: 44px; height: 26px; border-radius: 13px;
   background: rgba(0,0,0,0.15); position: relative; flex-shrink: 0;
   transition: background 0.22s;
 }
 .toggle-sw::after {
   content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%;
-  background: white; top: 3px; left: 3px;
+  background: white; top: 4px; left: 4px;
   transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
   box-shadow: 0 1px 4px rgba(0,0,0,0.30);
 }
 .back-row.paid .toggle-sw { background: rgba(30,160,100,0.75); }
-.back-row.paid .toggle-sw::after { transform: translateX(16px); }
+.back-row.paid .toggle-sw::after { transform: translateX(18px); }
 
 .back-edit-btn {
-  font-size: 11px; font-weight: 700; color: rgba(0,0,0,0.55);
-  padding: 5px 10px; border-radius: 6px;
-  border: 1px solid rgba(0,0,0,0.18); background: rgba(255,255,255,0.30);
-  cursor: pointer; min-height: 30px; font-family: inherit;
+  font-size: 13px; font-weight: 700; color: rgba(0,0,0,0.78);
+  padding: 8px 12px; border-radius: 9px;
+  border: 1px solid rgba(0,0,0,0.20); background: rgba(255,255,255,0.45);
+  cursor: pointer; min-height: 38px; font-family: inherit;
   display: flex; align-items: center; gap: 4px;
 }
 .back-upload-btn {
-  width: 100%; padding: 12px 16px; border-radius: 10px;
-  background: rgba(0,0,0,0.65); color: #ffffff;
-  font-size: 13px; font-weight: 700; border: none; cursor: pointer;
+  width: 100%; padding: 12px 16px; border-radius: 12px;
+  background: rgba(0,0,0,0.72); color: #ffffff;
+  font-size: 14px; font-weight: 700; line-height: 1.25; border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center; gap: 7px;
-  transition: opacity 0.18s, transform 0.12s; font-family: inherit; min-height: 44px;
+  transition: opacity 0.18s, transform 0.12s; font-family: inherit; min-height: 48px;
 }
 .back-upload-btn:active { transform: scale(0.98); opacity: 0.80; }
 .back-upload-btn.loading { opacity: 0.45; pointer-events: none; }
-.back-upload-btn.secondary,
-.back-upload-btn.hsbc-manual {
-  background: rgba(255,255,255,0.35); color: rgba(0,0,0,0.65);
+.back-upload-btn.secondary {
+  background: rgba(255,255,255,0.45); color: rgba(0,0,0,0.80);
   border: 1px solid rgba(0,0,0,0.18);
 }
-.back-parse-result { font-size: 11px; padding: 7px 9px; border-radius: 7px; display: none; }
+.back-parse-result { font-size: 12px; font-weight: 600; line-height: 1.4; padding: 9px 12px; border-radius: 10px; display: none; }
 .back-parse-result.success { display: block; background: rgba(52,200,138,0.25); color: rgba(0,100,60,0.90); }
 .back-parse-result.error   { display: block; background: rgba(240,96,96,0.20);  color: rgba(160,40,40,0.90); }
 
@@ -582,25 +598,27 @@ body {
 .c-dot.active { width: 20px; border-radius: 2px; background: var(--accent); }
 
 /* ════════════════════════════════════════════
-   ICON-ONLY TAB BAR — bottom, minimal
+   TAB BAR — bottom, icon + label
 ════════════════════════════════════════════ */
 #tab-bar {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 8px 24px calc(8px + var(--sab));
+  padding: 4px 16px calc(4px + var(--sab));
   border-top: 1px solid var(--border);
   background: rgba(8,12,20,0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 .tab-btn {
-  display: flex; align-items: center; justify-content: center;
-  padding: 12px 24px; border: none; background: transparent;
-  cursor: pointer; color: var(--text-3); transition: color 0.18s;
-  min-height: 48px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  padding: 6px 20px; border: none; background: transparent; font-family: inherit;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+  cursor: pointer; color: var(--text-2); transition: color 0.18s;
+  min-height: 52px; min-width: 72px; border-radius: 12px;
 }
+.tab-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .tab-btn.active { color: var(--accent); }
 .tab-btn svg { display: block; }
 
@@ -624,7 +642,6 @@ body {
 .tab-page.active::-webkit-scrollbar { display: none; }
 
 /* History */
-.history-title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px; }
 .history-sub   { font-size: 13px; color: var(--text-3); margin-bottom: 20px; }
 .graph-card {
   background: var(--surface); border-radius: 16px;
@@ -646,7 +663,6 @@ body {
 .history-card-updated { font-size: 10px; color: var(--text-3); margin-top: 2px; text-align: right; }
 
 /* Settings */
-.settings-title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px; }
 .settings-sub   { font-size: 13px; color: var(--text-3); margin-bottom: 20px; }
 .settings-group { margin-bottom: 20px; }
 .settings-group-label { font-size: 10px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; padding: 0 2px; }
@@ -1270,14 +1286,17 @@ input[type=file] { display: none; }
 
   <!-- ICON-ONLY TAB BAR — always last, always visible -->
   <div id="tab-bar">
-    <button class="tab-btn active" id="tab-btn-cards" onclick="switchTab('cards', this)">
+    <button class="tab-btn active" id="tab-btn-cards" onclick="switchTab('cards', this)" aria-current="page">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      <span>Cards</span>
     </button>
     <button class="tab-btn" id="tab-btn-history" onclick="switchTab('history', this)">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>History</span>
     </button>
     <button class="tab-btn" id="tab-btn-settings" onclick="switchTab('settings', this)">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2m0 18v-2m10-8h-2M4 12H2"/></svg>
+      <span>Settings</span>
     </button>
   </div>
 
@@ -1595,7 +1614,7 @@ function getPaymentState(cardId) {
   const dueText  = formatDayMonth(due.date);
 
   if (due.estimated) {
-    if (daysLeft < 0) return { state: 'due-soon', stmtKey, daysLeft, label: 'Unpaid · set a due day for exact reminders', short: 'Due day not set' };
+    if (daysLeft < 0) return { state: 'due-soon', stmtKey, daysLeft, label: 'Unpaid · set a due day for exact reminders', short: 'Unpaid · due day not set' };
     return { state: 'upcoming', stmtKey, daysLeft, label: `Likely due ~${dueText} · tap when paid`, short: `Likely due ~${dueText}` };
   }
   if (daysLeft < 0)   return { state: 'overdue',  stmtKey, daysLeft, label: `Overdue · was due ${dueText}`, short: `Overdue · was due ${dueText}` };
@@ -1636,7 +1655,7 @@ function getMonthTasks() {
 // ═══════════════════════════════════════════════════════════
 function getExpiryState(cardId) {
   const c = appData.cards[cardId];
-  const unit = CARD_META[cardId].ptsLabel;
+  const unit = CARD_META[cardId].unit;
   const cycle = EXPIRY_MODEL[cardId] === 'cycle';
   const icons = {
     grey:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.45)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
@@ -1656,23 +1675,23 @@ function getExpiryState(cardId) {
   return { cls: 'exp-green', icon: icons.green, label, text: `${what} · ${formatFullDate(c.expiry)}` };
 }
 
-// One sentence for the nudge bar about what's expiring and what to do
+// One short sentence for the nudge bar about what's expiring and what to do
 function expiryNudgeText(id, days) {
   const meta = CARD_META[id], risk = getAtRisk(id);
   const when = days === 0 ? 'today' : `in ${days} day${days === 1 ? '' : 's'}`;
   if (id === 'krisflyer') {
-    return `${risk !== null ? formatNum(risk) + ' KrisFlyer miles' : 'Some KrisFlyer miles'} expire ${when} — book or use them`;
+    return `${risk !== null ? formatNum(risk) + ' KrisFlyer miles' : 'KrisFlyer miles'} expire ${when} — book or use them`;
   }
   const t = getTransferable(id), r = TRANSFER_RULES[id];
   if (EXPIRY_MODEL[id] === 'cycle') {
     return t.miles
-      ? `All ${meta.short} points expire ${when} — transfer ${formatNum(t.miles)} miles in one go (${r.feeNote})`
-      : `All ${meta.short} points expire ${when}, and you're below the transfer minimum`;
+      ? `All ${meta.short} points expire ${when} — transfer ${formatNum(t.miles)} miles in one go`
+      : `All ${meta.short} points expire ${when} — below the transfer minimum`;
   }
-  const riskMiles = risk !== null ? CONVERSION[id](risk) : null;
-  const head = risk !== null ? `${formatNum(risk)} ${meta.ptsLabel} (${formatNum(riskMiles)} miles)` : `Some ${meta.short} points`;
-  return t.miles ? `${head} expire ${when} — a transfer now is ${r.feeNote === 'no fee' ? 'free' : r.feeNote}`
-                 : `${head} expire ${when} — you're ${formatNum(t.needed)} ${meta.ptsLabel} short of the transfer minimum`;
+  const amount = risk !== null ? `${formatNum(risk)} ${meta.unit}` : meta.unit;
+  return t.miles
+    ? `${meta.short}: ${amount} expire ${when} — transfer now${r.fee === 'Free' ? ' (free)' : ''}`
+    : `${meta.short}: ${amount} expire ${when} — ${formatNum(t.needed)} short of the transfer minimum`;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2491,8 +2510,10 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
   el.addEventListener('click',e=>{if(e.target===el){el.classList.remove('open');syncModalState()}});
 });
 
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 function animateHero(target) {
   const el=document.getElementById('hero-miles');
+  if (REDUCED_MOTION) { el.textContent = formatNum(target); return; }
   const start=parseInt(el.textContent.replace(/\D/g,''))||0;
   const diff=target-start; const dur=800; const startTime=performance.now();
   if(heroAnimFrame)cancelAnimationFrame(heroAnimFrame);
@@ -2512,7 +2533,8 @@ function debugPDF(){document.getElementById('file-debug').click()}
 
 function switchTab(name, btn) {
   // Update tab button active states
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.removeAttribute('aria-current'); });
+  const _tb = document.getElementById('tab-btn-' + name); if (_tb) _tb.setAttribute('aria-current', 'page');
   btn.classList.add('active');
 
   // Show/hide content areas — tab bar NEVER moves
@@ -2590,13 +2612,13 @@ document.getElementById('nudge-bar').addEventListener('keydown', e => {
 // CARD META + BACK RENDERING
 // ═══════════════════════════════════════════════════════════
 const CARD_META = {
-  citi_rewards:    { name:'Citi Rewards',                   short:'Citi Rewards',    ptsLabel:'ThankYou Points', rate:'10,000 pts → 4,000 miles',   uploadLabel:'Upload statement',
+  citi_rewards:    { name:'Citi Rewards',                   short:'Citi Rewards',    unit:'points', ptsLabel:'ThankYou Points', rate:'10,000 pts → 4,000 miles',   uploadLabel:'Upload statement',
                      manualHint:'Copy the ThankYou Points balance from the Citi app or your statement.' },
-  hsbc_revolution: { name:'HSBC Revolution',                short:'HSBC Revolution', ptsLabel:'Reward Points',   rate:'30,000 pts → 10,000 miles',  uploadLabel:null,
+  hsbc_revolution: { name:'HSBC Revolution',                short:'HSBC Revolution', unit:'points', ptsLabel:'Reward Points',   rate:'30,000 pts → 10,000 miles',  uploadLabel:null,
                      manualHint:'Copy the Reward Points balance from the HSBC app.' },
-  uob:             { name:"UOB Preferred Platinum + Lady's", short:'UOB',             ptsLabel:'UNI$',            rate:'1 UNI$ → 2 KrisFlyer miles', uploadLabel:'Upload combined UOB statement',
+  uob:             { name:"UOB Preferred Platinum + Lady's", short:'UOB',             unit:'UNI$',   ptsLabel:'UNI$',            rate:'1 UNI$ → 2 KrisFlyer miles', uploadLabel:'Upload statement',
                      manualHint:'Copy the combined UNI$ balance from the UOB app or your statement.' },
-  krisflyer:       { name:'KrisFlyer',                      short:'KrisFlyer',       ptsLabel:'Miles',           rate:'Ready to book',              uploadLabel:null,
+  krisflyer:       { name:'KrisFlyer',                      short:'KrisFlyer',       unit:'miles',  ptsLabel:'Miles',           rate:'Ready to book',              uploadLabel:null,
                      manualHint:'Copy your balance from the KrisFlyer app or singaporeair.com.' },
 };
 
@@ -2609,11 +2631,11 @@ function renderCardBack(cardId) {
   const exp  = getExpiryState(cardId);
   const miles = calcMiles(cardId);
   const delta = (c.points !== null && c.points_prev !== null) ? c.points - c.points_prev : null;
-  const stmtText = !c.statement_day ? 'Not set'
-    : `Statement ${c.statement_day}${ordinal(c.statement_day)}` + (c.due_day ? ` · due ${c.due_day}${ordinal(c.due_day)}` : ' · due day not set');
-  const deltaHtml = delta === null ? '' : delta > 0
-    ? `<span style="color:var(--accent);font-size:11px;font-weight:600;margin-top:1px">+${formatNum(delta)} this month</span>`
-    : delta < 0 ? `<span style="color:var(--red);font-size:11px;font-weight:600;margin-top:1px">${formatNum(delta)} this month</span>` : '';
+  const stmtText = c.statement_day ? `Statement ${c.statement_day}${ordinal(c.statement_day)}` : 'Not set';
+  const dueText  = !c.statement_day ? 'Add them for payment reminders'
+    : c.due_day ? `Payment due ${c.due_day}${ordinal(c.due_day)}` : 'Payment due day not set';
+  const deltaHtml = delta === null || delta === 0 ? ''
+    : `<span class="back-delta ${delta > 0 ? 'up' : 'down'}">${delta > 0 ? '+' : ''}${formatNum(delta)} since last update</span>`;
 
   const uploadIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>';
   const editIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
@@ -2627,22 +2649,23 @@ function renderCardBack(cardId) {
   let transferHTML = '';
   if (isBank) {
     const t = getTransferable(cardId), r = TRANSFER_RULES[cardId];
+    const feeText = r.fee === 'Free' ? 'No fee' : `${r.fee} fee`;
     if (t.miles > 0) {
       transferHTML = `<div class="back-row transfer-ready">
         <div class="back-row-left">
-          <span class="back-row-label">Transferable now · ${r.fee}</span>
+          <span class="back-row-label">Transferable now</span>
           <span class="back-row-value">${formatNum(t.miles)} miles</span>
-          <span class="back-row-note">${t.leftover ? formatNum(t.leftover) + ' ' + meta.ptsLabel + ' left over · ' : ''}${r.rule}</span>
         </div>
-        <button class="back-edit-btn" onclick="event.stopPropagation();openTransferSheet('${cardId}')">Log transfer</button>
+        <div class="back-row-note">${feeText} · ${r.rule}${t.leftover ? ` · ${formatNum(t.leftover)} ${meta.ptsLabel} left over` : ''}</div>
+        <button class="back-edit-btn back-row-action" onclick="event.stopPropagation();openTransferSheet('${cardId}')">Log a transfer</button>
       </div>`;
     } else if (c.points !== null) {
       transferHTML = `<div class="back-row" style="cursor:default">
         <div class="back-row-left">
           <span class="back-row-label">Transfer minimum</span>
-          <span class="back-row-value">${formatNum(t.needed)} more ${meta.ptsLabel} to go</span>
-          <span class="back-row-note">${r.rule}</span>
+          <span class="back-row-value">${formatNum(t.needed)} more ${meta.ptsLabel} needed</span>
         </div>
+        <div class="back-row-note">${r.rule} · ${feeText.toLowerCase()}</div>
       </div>`;
     }
   }
@@ -2652,32 +2675,33 @@ function renderCardBack(cardId) {
       <div class="back-row-left">
         <span class="back-row-label">${meta.ptsLabel}</span>
         <span class="back-row-value">${c.points !== null ? formatNum(c.points) : '—'}</span>
-        ${deltaHtml}
       </div>
-      ${cardId === 'krisflyer' ? '' : `<div style="text-align:right">
-        <div style="font-size:9px;font-weight:600;letter-spacing:0.10em;text-transform:uppercase;color:rgba(0,0,0,0.45);margin-bottom:2px">Miles</div>
-        <div style="font-size:18px;font-weight:800;color:rgba(0,90,55,0.92);font-variant-numeric:tabular-nums">${miles !== null ? formatNum(miles) : '—'}</div>
+      ${cardId === 'krisflyer' ? '' : `<div class="back-miles">
+        <div class="back-miles-label">Miles</div>
+        <div class="back-miles-value">${miles !== null ? formatNum(miles) : '—'}</div>
       </div>`}
+      ${deltaHtml ? `<div class="back-row-note">${deltaHtml}</div>` : ''}
     </div>
     ${transferHTML}
     ${isBank ? `<div class="back-row ${ps.state}" id="back-payment-${cardId}" onclick="event.stopPropagation();togglePayment('${cardId}')">
       <div class="back-row-left">
         <span class="back-row-label">Payment</span>
-        <span class="back-row-value" id="back-payment-text-${cardId}">${ps.label}</span>
+        <span class="back-row-value" id="back-payment-text-${cardId}">${ps.short || ps.label}</span>
       </div>
-      <div class="toggle-sw" id="back-toggle-${cardId}"></div>
+      <div class="toggle-sw" id="back-toggle-${cardId}" role="switch" aria-checked="${ps.state === 'paid'}" aria-label="Paid"></div>
     </div>` : ''}
     <div class="back-row ${exp.cls}" id="back-expiry-${cardId}" onclick="event.stopPropagation();openExpiryModal('${cardId}')">
       <div class="back-row-left">
         <span class="back-row-label">${exp.label}</span>
         <span class="back-row-value" id="back-expiry-text-${cardId}">${exp.text}</span>
       </div>
-      <span style="width:18px;height:18px;flex-shrink:0">${exp.icon}</span>
+      <span style="width:18px;height:18px;display:flex;align-items:center">${exp.icon}</span>
     </div>
     ${isBank ? `<div class="back-row" style="cursor:default">
       <div class="back-row-left">
         <span class="back-row-label">Billing Dates</span>
         <span class="back-row-value" id="back-stmt-${cardId}">${stmtText}</span>
+        <span class="back-row-sub">${dueText}</span>
       </div>
       <button class="back-edit-btn" onclick="event.stopPropagation();openStmtDayModal('${cardId}')">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -2686,6 +2710,16 @@ function renderCardBack(cardId) {
     </div>` : ''}
     ${uploadHTML}
     <div class="back-parse-result" id="back-parse-${cardId}"></div>`;
+  syncBackFade(body);
+  if (!body.dataset.fadeBound) {
+    body.dataset.fadeBound = '1';
+    body.addEventListener('scroll', () => syncBackFade(body), { passive: true });
+  }
+}
+function syncBackFade(body) {
+  requestAnimationFrame(() => {
+    body.classList.toggle('more-below', body.scrollTop + body.clientHeight < body.scrollHeight - 4);
+  });
 }
 
 function ordinal(n) {
@@ -2717,7 +2751,7 @@ function renderAll() {
   if (nudge) {
     const cls = nudge.cls==='nudge-red'?'red':nudge.cls==='nudge-amber'?'amber':'info';
     nudgeEl.className = cls;  // ID handles base styles, class drives colour variant
-    nudgeEl.style.display = 'block';
+    nudgeEl.style.display = '-webkit-box';
     nudgeEl.textContent = nudge.text;
     nudgeEl.dataset.cardId = nudge.cardId || '';
   } else {
@@ -2920,6 +2954,7 @@ function _minOff() { return -(_cardW() * (cardIds.length - 1)); }
 function _snapX(idx) { return -(idx * _cardW()); }
 
 function _easeToCard(tx, dur=300) {
+  if (REDUCED_MOTION) dur = 1;
   _animating=true;
   const from=_cx, dist=tx-from, t0=performance.now();
   (function f(now){
